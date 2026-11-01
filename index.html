@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cryptography in Online Multiplayer Games</title>
+<meta name="description" content="An animated presentation on encryption, authentication and digital ownership in online multiplayer games.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#05070d;color:#EEF1F6;font-family:'IBM Plex Sans',Arial,sans-serif;overflow:hidden}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#canvas{position:relative;width:1920px;height:1080px;flex:none;transform-origin:center center;box-shadow:0 0 0 1px #1b2238,0 30px 80px rgba(0,0,0,.6)}
+.slide{position:absolute;inset:0;visibility:hidden;opacity:0;transition:opacity .6s ease,transform .6s ease,visibility 0s linear .6s}
+.slide.on{visibility:visible;opacity:1;transform:none;transition:opacity .6s ease,transform .6s ease,visibility 0s}
+.slide.push{transform:translateY(60px)}
+.slide.push.on{transform:none}
+.slide.push.out{transform:translateY(-60px)}
+/* slide content defaults (match the deck format) */
+.slide section{position:relative;width:1920px;height:1080px;overflow:hidden}
+.slide h1,.slide h2,.slide h3,.slide p,.slide ul,.slide ol{margin:0}
+.slide h1{font-size:96px;font-weight:600;line-height:1.1}
+.slide h2{font-size:64px;font-weight:600;line-height:1.15}
+.slide h3{font-size:44px;font-weight:600;line-height:1.2}
+.slide p,.slide li{font-size:32px;line-height:1.4}
+.slide div:not([style*="display"]){display:flex;flex-direction:column}
+.slide a{color:inherit}
+/* build-in animations */
+.slide [data-build-in]{opacity:0;transition:opacity .55s ease var(--d,0s),transform .55s cubic-bezier(.2,.7,.2,1) var(--d,0s)}
+.slide [data-build-in="rise"]{transform:translateY(28px)}
+.slide [data-build-in="drop"]{transform:translateY(-28px)}
+.slide [data-build-in="left"]{transform:translateX(-40px)}
+.slide [data-build-in="right"]{transform:translateX(40px)}
+.slide [data-build-in="scale"],.slide [data-build-in="pop"]{transform:scale(.92)}
+.slide.on.built [data-build-in]{opacity:1;transform:none}
+/* chrome */
+#bar{position:fixed;left:0;right:0;bottom:0;height:4px;background:#121829;z-index:5}
+#prog{height:100%;width:0;background:#3FD4E6;transition:width .4s ease}
+#ui{position:fixed;right:16px;bottom:16px;display:flex;gap:8px;align-items:center;z-index:6;font:13px 'JetBrains Mono',monospace;opacity:.25;transition:opacity .3s}
+#ui:hover,#ui:focus-within,body.idle-off #ui{opacity:1}
+#ui button,#ui a{background:#121829;color:#EEF1F6;border:1px solid #2A3352;border-radius:8px;padding:8px 12px;font:inherit;cursor:pointer;text-decoration:none}
+#ui button:hover,#ui a:hover{border-color:#3FD4E6}
+#count{padding:0 6px;color:#A9B4C8}
+#notes{position:fixed;left:16px;right:16px;bottom:16px;max-height:34vh;overflow:auto;background:rgba(18,24,41,.96);border:1px solid #2A3352;border-radius:12px;padding:16px 20px;font-size:16px;line-height:1.6;color:#C9D2E3;white-space:pre-wrap;display:none;z-index:7}
+#notes.show{display:block}
+#notes b{color:#3FD4E6;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;display:block;margin-bottom:6px}
+.hit{position:fixed;top:0;bottom:0;width:30%;z-index:4;cursor:pointer}
+#hl{left:0}#hr{right:0}
+#help{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:rgba(18,24,41,.95);border:1px solid #2A3352;border-radius:10px;padding:10px 16px;font:13px 'JetBrains Mono',monospace;color:#A9B4C8;z-index:8;transition:opacity .6s}
+@media (prefers-reduced-motion:reduce){.slide,.slide [data-build-in]{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="stage"><div id="canvas" role="region" aria-roledescription="carousel" aria-label="Cryptography in Online Multiplayer Games">
+<div class="slide" id="s1" role="group" aria-roledescription="slide" aria-label="1 of 12: Cryptography in Online Multiplayer Games" aria-hidden="true">
+<section id="cover" data-transition="fade" style="background:#0D1120;color:#EEF1F6;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:32px">
+<iframe class="emb" sandbox="allow-scripts" title="Animation" tabindex="-1" style="position:absolute;left:1060px;top:128px;width:732px;height:824px;border:0;display:block;background:transparent" data-src="<!doctype html><html><body style=&quot;margin:0;background:transparent;overflow:hidden&quot;><canvas id=&quot;c&quot; width=&quot;732&quot; height=&quot;824&quot;></canvas><script>
+const c=document.getElementById('c'),g=c.getContext('2d'),W=732,H=824,CW=46,RH=34;
+const N=Math.floor(W/CW),hx='0123456789ABCDEF',rb=()=>hx[Math.random()*16|0]+hx[Math.random()*16|0];
+const cols=[];for(let i=0;i<N;i++)cols.push({y:Math.random()*H,v:0.6+Math.random()*1.4,ch:Array.from({length:10},rb)});
+let t=0;
+function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+function draw(){t+=1;g.clearRect(0,0,W,H);g.font='600 24px ui-monospace,Menlo,Consolas,monospace';g.textBaseline='top';
+for(let i=0;i<N;i++){const k=cols[i];k.y+=k.v;if(k.y-10*RH>H){k.y=-RH;k.v=0.6+Math.random()*1.4;}
+if(Math.random()<0.08)k.ch[Math.random()*10|0]=rb();
+for(let j=0;j<10;j++){const y=k.y-j*RH;if(y<-RH||y>H)continue;const a=j==0?0.95:0.5*(1-j/10);g.fillStyle=j==0?'rgba(238,241,246,'+a+')':'rgba(63,212,230,'+a+')';g.fillText(k.ch[j],i*CW+6,y);}}
+const cx=W/2,cy=H/2+20;
+g.fillStyle='rgba(13,17,32,0.94)';g.beginPath();g.arc(cx,cy-20,200,0,7);g.fill();
+for(let r=0;r<3;r++){const q=(t*0.8+r*40)%120;g.strokeStyle='rgba(63,212,230,'+(0.55*(1-q/120))+')';g.lineWidth=3;g.beginPath();g.arc(cx,cy-20,200+q,0,7);g.stroke();}
+g.strokeStyle='#3FD4E6';g.lineWidth=4;g.beginPath();g.arc(cx,cy-20,200,0,7);g.stroke();
+const o=16*Math.max(0,Math.sin(t/45));
+g.strokeStyle='#F5A524';g.lineWidth=22;g.lineCap='round';g.beginPath();g.moveTo(cx-58,cy+4-o);g.lineTo(cx-58,cy-40-o);g.arc(cx,cy-40-o,58,Math.PI,0);g.lineTo(cx+58,cy+4);g.stroke();
+g.fillStyle='#F5A524';rr(cx-95,cy-10,190,140,22);g.fill();
+g.fillStyle='#0D1120';g.beginPath();g.arc(cx,cy+45,18,0,7);g.fill();g.fillRect(cx-7,cy+50,14,42);
+requestAnimationFrame(draw);}
+draw();
+</script></body></html>"></iframe>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6;letter-spacing:2px;text-transform:uppercase">Applied cryptography · Seminar</p>
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:700;line-height:1.05;letter-spacing:-2px;width:880px">Cryptography in Online Multiplayer Games</h1>
+<p style="font-size:44px;line-height:1.25;color:#A9B4C8;width:860px"><span style="color:#3FD4E6">Encryption</span>, <span style="color:#3FD4E6">authentication</span> and <span style="color:#F5A524">digital ownership</span></p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7C87A0">[Nikhil Simon Toppo] · [Abhishek Joshi] · [Abhinav Kumar]</p>
+
+</section>
+
+</div>
+<div class="slide" id="s2" role="group" aria-roledescription="slide" aria-label="2 of 12: What attackers want from a match" aria-hidden="true">
+<section id="threats" data-transition="fade" style="background:#0D1120;color:#EEF1F6;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6;letter-spacing:2px;text-transform:uppercase">Threat model</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">What attackers want from a match</h2>
+<div data-build-in="fade" style="--d:0s;position:absolute;left:128px;top:300px;width:1664px;display:grid;grid-template-columns:360px 820px 420px;padding:18px 32px;border-bottom:2px solid #3FD4E6">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#A9B4C8">ATTACK</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#A9B4C8">EXAMPLE</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#A9B4C8">PROPERTY AT STAKE</p>
+</div>
+<div data-build-in="rise" style="--d:0.35s;position:absolute;left:128px;top:372px;width:1664px;display:grid;grid-template-columns:360px 820px 420px;padding:20px 32px;background:#131A2E;border-bottom:1px solid #2A3352">
+<p style="font-size:32px;font-weight:600">Sniff traffic</p>
+<p style="font-size:32px;color:#A9B4C8">Read rival positions on shared Wi‑Fi</p>
+<p style="font-size:32px;font-weight:600;color:#3FD4E6">Confidentiality</p>
+</div>
+<div data-build-in="rise" style="--d:0.7s;position:absolute;left:128px;top:458px;width:1664px;display:grid;grid-template-columns:360px 820px 420px;padding:20px 32px;background:#0D1120;border-bottom:1px solid #2A3352">
+<p style="font-size:32px;font-weight:600">Forge packets</p>
+<p style="font-size:32px;color:#A9B4C8">Change damage or inject a fake hit</p>
+<p style="font-size:32px;font-weight:600;color:#3FD4E6">Integrity</p>
+</div>
+<div data-build-in="rise" style="--d:1.0499999999999998s;position:absolute;left:128px;top:544px;width:1664px;display:grid;grid-template-columns:360px 820px 420px;padding:20px 32px;background:#131A2E;border-bottom:1px solid #2A3352">
+<p style="font-size:32px;font-weight:600">Impersonate</p>
+<p style="font-size:32px;color:#A9B4C8">Hijack a session or run a fake server</p>
+<p style="font-size:32px;font-weight:600;color:#3FD4E6">Authentication</p>
+</div>
+<div data-build-in="rise" style="--d:1.4s;position:absolute;left:128px;top:630px;width:1664px;display:grid;grid-template-columns:360px 820px 420px;padding:20px 32px;background:#0D1120;border-bottom:1px solid #2A3352">
+<p style="font-size:32px;font-weight:600">Replay</p>
+<p style="font-size:32px;color:#A9B4C8">Resend a valid “buy” packet twice</p>
+<p style="font-size:32px;font-weight:600;color:#3FD4E6">Freshness</p>
+</div>
+<div data-build-in="rise" style="--d:1.75s;position:absolute;left:128px;top:716px;width:1664px;display:grid;grid-template-columns:360px 820px 420px;padding:20px 32px;background:#131A2E;border-bottom:1px solid #2A3352">
+<p style="font-size:32px;font-weight:600">Repudiate</p>
+<p style="font-size:32px;color:#A9B4C8">“I never traded that sword”</p>
+<p style="font-size:32px;font-weight:600;color:#F5A524">Non‑repudiation</p>
+</div>
+<p data-build-in="fade" style="--d:2.0999999999999996s;position:absolute;left:128px;top:826px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.4;color:#A9B4C8"><span style="color:#3FD4E6">PART 01 Encryption</span> → confidentiality, integrity · <span style="color:#3FD4E6">PART 02 Authentication</span> → authenticity, freshness · <span style="color:#F5A524">PART 03 Ownership</span> → non‑repudiation</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7C87A0">Cryptography in Online Multiplayer Games · 02</p>
+
+</section>
+
+</div>
+<div class="slide" id="s3" role="group" aria-roledescription="slide" aria-label="3 of 12: Three primitives, one pattern" aria-hidden="true">
+<section id="toolbox" data-transition="fade" style="background:#F2EFE8;color:#141827;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#0B6875;letter-spacing:2px;text-transform:uppercase">The toolbox</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Three primitives, one pattern</h2>
+<div data-build-in="rise" style="--d:0s;position:absolute;left:128px;top:290px;width:533px;background:#FBFAF6;border:1px solid #DDD8CC;border-radius:20px;padding:36px 48px;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.2">Symmetric</h3>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#0B6875">AES‑256‑GCM · ChaCha20</p>
+<p style="font-size:32px;line-height:1.4;color:#4A5268">One shared key locks and unlocks every packet.</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#5E6578;border-top:1px solid #DDD8CC;padding:12px 0 0 0">USED IN: every packet</p>
+</div>
+<div data-build-in="rise" style="--d:0.35s;position:absolute;left:693px;top:290px;width:533px;background:#FBFAF6;border:1px solid #DDD8CC;border-radius:20px;padding:36px 48px;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.2">Asymmetric</h3>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#0B6875">X25519 · Ed25519 · RSA</p>
+<p style="font-size:32px;line-height:1.4;color:#4A5268">Key pairs agree on secrets and sign things.</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#5E6578;border-top:1px solid #DDD8CC;padding:12px 0 0 0">USED IN: handshakes, signatures</p>
+</div>
+<div data-build-in="rise" style="--d:0.7s;position:absolute;left:1258px;top:290px;width:534px;background:#FBFAF6;border:1px solid #DDD8CC;border-radius:20px;padding:36px 48px;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.2">Hashes &amp; MACs</h3>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#0B6875">SHA‑256 · HMAC · Argon2id</p>
+<p style="font-size:32px;line-height:1.4;color:#4A5268">Keyed fingerprints that reveal tampering.</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#5E6578;border-top:1px solid #DDD8CC;padding:12px 0 0 0">USED IN: tokens, passwords, logs</p>
+</div>
+<div data-build-in="fade" style="--d:1.0499999999999998s;position:absolute;left:128px;top:664px;width:1664px;background:#141827;color:#EEF1F6;border-radius:20px;padding:28px 40px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:8px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.2;color:#3FD4E6">16.7 ms</p><p style="font-size:24px;line-height:1.4;color:#A9B4C8">One frame at 60 Hz: crypto must cost microseconds</p></div>
+<div style="display:flex;flex-direction:column;gap:8px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.2;color:#3FD4E6">UDP</p><p style="font-size:24px;line-height:1.4;color:#A9B4C8">Lost packets aren’t resent, so each decrypts alone</p></div>
+<div style="display:flex;flex-direction:column;gap:8px"><p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.2;color:#3FD4E6">1,200 B</p><p style="font-size:24px;line-height:1.4;color:#A9B4C8">QUIC’s minimum datagram; a 16‑byte tag is 1.3%</p></div>
+<div style="display:flex;flex-direction:column;gap:8px;border-left:2px solid #F5A524;padding:0 0 0 28px"><p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#F5A524">THE PATTERN</p><p style="font-size:24px;line-height:1.4;font-weight:600">Handshake once with public keys, then AEAD on every packet</p></div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#5E6578">Cryptography in Online Multiplayer Games · 03 · Source: RFC 9000 (QUIC), §14</p>
+
+</section>
+
+</div>
+<div class="slide" id="s4" role="group" aria-roledescription="slide" aria-label="4 of 12: Anatomy of an encrypted game packet" aria-hidden="true">
+<section id="aead" data-transition="fade" style="background:#0D1120;color:#EEF1F6;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6;letter-spacing:2px;text-transform:uppercase">01 · Authenticated encryption</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Anatomy of an encrypted game packet</h2>
+<iframe class="emb" sandbox="allow-scripts" title="Animation" tabindex="-1" style="position:absolute;left:128px;top:300px;width:1664px;height:480px;border:0;display:block;background:transparent" data-src="<!doctype html><html><head><style>
+*{box-sizing:border-box;margin:0}
+body{background:transparent;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#EEF1F6;overflow:hidden;padding:8px}
+.lbl{font-size:26px;color:#3FD4E6;letter-spacing:2px;height:48px;font-weight:700}
+.row{display:flex;gap:20px;height:150px}
+.b{border-radius:18px;padding:18px 28px;display:flex;flex-direction:column;justify-content:center;gap:10px;transition:border-color .4s,background .4s,opacity .5s}
+.s{font-size:24px;color:#A9B4C8;letter-spacing:1px}
+.v{font-size:38px;white-space:nowrap}
+#h{background:#1E2742;border:3px solid #3B4770;width:420px}
+#p{background:#14243A;border:3px solid #3FD4E6;flex:1;overflow:hidden}
+#g{background:#33260A;border:3px solid #F5A524;width:250px;opacity:0}
+.mid{height:100px;display:flex;align-items:center;gap:24px;padding-left:440px}
+#k{border:3px dashed #F5A524;color:#F5A524;border-radius:999px;padding:12px 28px;font-size:26px;opacity:.25;transition:opacity .4s}
+.arr{font-size:48px;color:#3FD4E6}
+.t{font-family:system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,sans-serif}
+#st{margin-top:12px;font-size:36px;font-weight:700;min-height:52px}
+#sub{margin-top:10px;font-size:28px;color:#A9B4C8}
+.f{color:#0D1120;background:#F5A524;border-radius:6px;padding:0 4px}
+</style></head><body>
+<div class=&quot;lbl&quot; id=&quot;lb&quot;></div>
+<div class=&quot;row&quot;>
+<div class=&quot;b&quot; id=&quot;h&quot;><span class=&quot;s&quot;>HEADER · clear, authenticated</span><span class=&quot;v&quot;>seq 4182 · p17</span></div>
+<div class=&quot;b&quot; id=&quot;p&quot;><span class=&quot;s&quot; id=&quot;ps&quot;>PAYLOAD</span><span class=&quot;v&quot; id=&quot;pv&quot;></span></div>
+<div class=&quot;b&quot; id=&quot;g&quot;><span class=&quot;s&quot;>AUTH TAG</span><span class=&quot;v&quot;>16 B</span></div>
+</div>
+<div class=&quot;mid&quot;><span class=&quot;arr&quot;>&amp;#8635;</span><span id=&quot;k&quot;>AES-256-GCM · key K · nonce = f(seq 4182)</span></div>
+<div id=&quot;st&quot; class=&quot;t&quot;></div><div id=&quot;sub&quot; class=&quot;t&quot;></div>
+<script>
+const P='pos=(12.4, 3.1) fire=1',C='9f3ac1075ed28841b60c7a',F=C.slice(0,8)+'<span class=&quot;f&quot;>5f</span>'+C.slice(10);
+const $=i=>document.getElementById(i);let t=0;
+function set(lb,ps,pv,st,stc,sub){$('lb').textContent=lb;$('ps').textContent=ps;$('pv').innerHTML=pv;$('st').textContent=st;$('st').style.color=stc||'#EEF1F6';$('sub').textContent=sub||''}
+function tick(){t=(t+1)%220;
+if(t<24){set('1 · CLIENT BUILDS A PACKET','PAYLOAD · plaintext',P,'','','Position and trigger state, about to leave the player’s machine');$('g').style.opacity=0;$('k').style.opacity=.25;$('p').style.borderColor='#3FD4E6';}
+else if(t<64){const n=Math.round((t-24)/40*P.length);set('2 · ENCRYPT + AUTHENTICATE','PAYLOAD · encrypting…',C.slice(0,n)+P.slice(n),'','','One symmetric key, a fresh nonce for every packet');$('k').style.opacity=1;}
+else if(t<78){set('2 · ENCRYPT + AUTHENTICATE','PAYLOAD · ciphertext',C,'','','The tag covers the header and the ciphertext together');$('g').style.opacity=1;}
+else if(t<122){set('3 · SERVER RECEIVES','PAYLOAD · ciphertext',C,'✓  Tag valid → decrypt → apply the move','#3FD4E6','Anyone sniffing the Wi‑Fi saw only random-looking bytes');$('k').style.opacity=.25;}
+else if(t<148){set('4 · ATTACKER ON THE PATH','PAYLOAD · tampered',F,'Flips a single bit in transit…','#F5A524','Trying to change damage, position or a purchase');$('p').style.borderColor='#F5A524';}
+else if(t<204){set('5 · SERVER RECEIVES','PAYLOAD · tampered',F,'✗  Tag mismatch → packet dropped','#F5A524','Game logic never sees it. Without key K, no valid tag can be made');}
+else{set('','','','','','');$('g').style.opacity=0;}
+}
+tick();setInterval(tick,50);
+</script></body></html>"></iframe>
+<div data-build-in="fade" style="--d:0s;position:absolute;left:128px;top:800px;width:1664px;border-top:1px solid #2A3352;padding:20px 0 0 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:24px;font-weight:700;color:#3FD4E6">Valve GameNetworkingSockets</p><p style="font-size:24px;line-height:1.4;color:#A9B4C8">AES‑GCM‑256 per packet; Curve25519 key exchange and certs</p></div>
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:24px;font-weight:700;color:#3FD4E6">QUIC / WebTransport</p><p style="font-size:24px;line-height:1.4;color:#A9B4C8">TLS 1.3 inside UDP; AEAD on every packet</p></div>
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:24px;font-weight:700;color:#3FD4E6">WebRTC data channels</p><p style="font-size:24px;line-height:1.4;color:#A9B4C8">DTLS, TLS for datagrams, for browser P2P</p></div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7C87A0">Cryptography in Online Multiplayer Games · 04 · Source: github.com/ValveSoftware/GameNetworkingSockets</p>
+
+</section>
+
+</div>
+<div class="slide" id="s5" role="group" aria-roledescription="slide" aria-label="5 of 12: Agreeing on a key in plain sight" aria-hidden="true">
+<section id="keyx" data-transition="fade" style="background:#0D1120;color:#EEF1F6;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6;letter-spacing:2px;text-transform:uppercase">01 · Key exchange</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Agreeing on a key in plain sight</h2>
+<iframe class="emb" sandbox="allow-scripts" title="Animation" tabindex="-1" style="position:absolute;left:128px;top:300px;width:960px;height:600px;border:0;display:block;background:transparent" data-src="<!doctype html><html><head><style>
+*{box-sizing:border-box;margin:0}body{background:transparent;overflow:hidden;font-family:system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,sans-serif;color:#EEF1F6;width:960px;height:600px;position:relative}
+.n{position:absolute;font-size:30px;font-weight:700;top:8px;width:300px;text-align:center}
+.d{position:absolute;width:92px;height:92px;border-radius:50%;transition:left 1.2s ease,top 1.2s ease,opacity .6s;opacity:0;border:3px solid rgba(238,241,246,.3)}
+.l{position:absolute;font-size:24px;color:#A9B4C8;width:300px;text-align:center;transition:opacity .5s;opacity:0}
+#cap{position:absolute;left:0;top:548px;width:960px;text-align:center;font-size:28px;font-weight:600}
+#ch{position:absolute;left:260px;top:276px;width:440px;border-top:3px dashed #3B4770}
+#eve{position:absolute;left:330px;top:300px;width:300px;text-align:center;font-size:24px;color:#F5A524;opacity:0;transition:opacity .5s}
+</style></head><body>
+<div class=&quot;n&quot; style=&quot;left:50px;color:#F5A524&quot;>Alice · player</div>
+<div class=&quot;n&quot; style=&quot;left:610px;color:#3FD4E6&quot;>Bob · server</div>
+<div id=&quot;ch&quot;></div><div id=&quot;eve&quot;>Eve (eavesdropper) sees only the mixes</div>
+<div class=&quot;d&quot; id=&quot;ap&quot;></div><div class=&quot;d&quot; id=&quot;as&quot;></div><div class=&quot;d&quot; id=&quot;bp&quot;></div><div class=&quot;d&quot; id=&quot;bs&quot;></div>
+<div class=&quot;d&quot; id=&quot;am&quot;></div><div class=&quot;d&quot; id=&quot;bm&quot;></div><div class=&quot;d&quot; id=&quot;af&quot;></div><div class=&quot;d&quot; id=&quot;bf&quot;></div>
+<div class=&quot;l&quot; id=&quot;l1&quot; style=&quot;left:50px;top:170px&quot;>public + secret</div><div class=&quot;l&quot; id=&quot;l2&quot; style=&quot;left:610px;top:170px&quot;>public + secret</div>
+<div class=&quot;l&quot; id=&quot;l3&quot; style=&quot;left:50px;top:330px&quot;>mix</div><div class=&quot;l&quot; id=&quot;l4&quot; style=&quot;left:610px;top:330px&quot;>mix</div>
+<div class=&quot;l&quot; id=&quot;l5&quot; style=&quot;left:50px;top:490px;color:#EEF1F6;font-weight:700&quot;>shared key</div><div class=&quot;l&quot; id=&quot;l6&quot; style=&quot;left:610px;top:490px;color:#EEF1F6;font-weight:700&quot;>shared key</div>
+<div id=&quot;cap&quot;></div>
+<script>
+const E=i=>document.getElementById(i),S=(i,o)=>{const e=E(i);for(const k in o)e.style[k]=o[k]};
+const pub='#F2E58C',a='#E8590C',b='#2F6FEB',ma='rgb(237,159,76)',mb='rgb(144,170,187)',f='rgb(174,143,129)';
+const cap=t=>E('cap').textContent=t,L=(ids,v)=>ids.forEach(i=>S(i,{opacity:v}));
+function reset(){S('ap',{left:'104px',top:'70px',background:pub,opacity:0});S('as',{left:'204px',top:'70px',background:a,opacity:0});
+S('bp',{left:'664px',top:'70px',background:pub,opacity:0});S('bs',{left:'764px',top:'70px',background:b,opacity:0});
+S('am',{left:'154px',top:'230px',background:ma,opacity:0});S('bm',{left:'714px',top:'230px',background:mb,opacity:0});
+S('af',{left:'154px',top:'390px',background:f,opacity:0});S('bf',{left:'714px',top:'390px',background:f,opacity:0});
+L(['l1','l2','l3','l4','l5','l6'],0);S('eve',{opacity:0});}
+const st=[
+()=>{reset();S('ap',{opacity:1});S('bp',{opacity:1});cap('1 · Both sides start from the same public colour');},
+()=>{S('as',{opacity:1});S('bs',{opacity:1});L(['l1','l2'],1);cap('2 · Each mixes in a private colour it never sends');},
+()=>{S('am',{opacity:1});S('bm',{opacity:1});L(['l3','l4'],1);cap('3 · They swap the mixes over the open internet');},
+()=>{S('am',{left:'714px'});S('bm',{left:'154px'});S('eve',{opacity:1});},
+()=>{},
+()=>{S('af',{opacity:1});S('bf',{opacity:1});L(['l5','l6'],1);cap('4 · Each adds its own secret to the mix it got: same colour');},
+()=>{cap('Eve can’t un-mix paint. Real games use X25519 numbers instead.');},
+()=>{}];
+let i=0;function run(){st[i]();i=(i+1)%st.length}run();setInterval(run,1800);
+</script></body></html>"></iframe>
+<div data-build-in="rise" style="--d:0s;position:absolute;left:1152px;top:300px;width:640px;display:flex;flex-direction:column;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">01</p>
+<p style="font-size:32px;line-height:1.4">Both sides start from a public value and mix in a private one.</p>
+</div>
+<div data-build-in="rise" style="--d:0.35s;position:absolute;left:1152px;top:460px;width:640px;display:flex;flex-direction:column;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">02</p>
+<p style="font-size:32px;line-height:1.4">They swap the mixes. An eavesdropper sees only these.</p>
+</div>
+<div data-build-in="rise" style="--d:0.7s;position:absolute;left:1152px;top:620px;width:640px;display:flex;flex-direction:column;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">03</p>
+<p style="font-size:32px;line-height:1.4">Each adds its secret to the other’s mix and gets the same key.</p>
+</div>
+<p data-build-in="fade" style="--d:1.0499999999999998s;position:absolute;left:1152px;top:800px;width:640px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.4;color:#F5A524;border-top:1px solid #2A3352;padding:16px 0 0 0">IN GAMES → X25519 + HKDF = one key per direction</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7C87A0">Cryptography in Online Multiplayer Games · 05</p>
+
+</section>
+
+</div>
+<div class="slide push" id="s6" role="group" aria-roledescription="slide" aria-label="6 of 12: Encryption ends at the player’s RAM." aria-hidden="true">
+<section id="client" data-transition="push" style="background:#F5A524;color:#141827;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:center;gap:32px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#141827;letter-spacing:2px;text-transform:uppercase">Part 02 · Authentication starts here</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px;width:880px">Encryption ends at the player’s RAM.</h2>
+<p style="font-size:32px;line-height:1.4;color:#3A2A05;width:880px">A wallhack reads enemy positions after the game decrypts them. <b>Defence 1 is design:</b> an authoritative server that sends each player only what they could see.</p>
+<div data-build-in="rise" style="--d:0s;position:absolute;left:1104px;top:160px;width:688px;background:#141827;color:#EEF1F6;border-radius:20px;padding:40px;display:flex;flex-direction:column;gap:20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">DEFENCE 2 · PROVE THE MACHINE</p>
+<div style="display:flex;gap:20px;align-items:flex-start"><span aria-hidden="true" style="color:#3FD4E6;width:44px;height:44px;display:inline-block;flex:none"><svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span><div style="display:flex;flex-direction:column;gap:4px"><h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Code signing</h3><p style="font-size:24px;line-height:1.4;color:#A9B4C8">Launcher checks the publisher’s signature on files and patches</p></div></div>
+<div style="display:flex;gap:20px;align-items:flex-start"><span aria-hidden="true" style="color:#3FD4E6;width:44px;height:44px;display:inline-block;flex:none"><svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div style="display:flex;flex-direction:column;gap:4px"><h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Secure Boot</h3><p style="font-size:24px;line-height:1.4;color:#A9B4C8">Firmware loads only signed bootloaders and kernels</p></div></div>
+<div style="display:flex;gap:20px;align-items:flex-start"><span aria-hidden="true" style="color:#3FD4E6;width:44px;height:44px;display:inline-block;flex:none"><svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg></span><div style="display:flex;flex-direction:column;gap:4px"><h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">TPM 2.0</h3><p style="font-size:24px;line-height:1.4;color:#A9B4C8">Hardware chip records each boot step and signs a report</p></div></div>
+<p style="font-size:24px;line-height:1.4;border-top:1px solid #2A3352;padding:20px 0 0 0"><span style="color:#3FD4E6">In the wild:</span> Call of Duty: Black Ops 7, Warzone and Battlefield 6 require TPM 2.0 and Secure Boot on PC.</p>
+<p style="font-size:24px;line-height:1.4;color:#A9B4C8"><span style="color:#F5A524">Trade‑off:</span> older PCs and most Linux players get locked out.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3A2A05">Cryptography in Online Multiplayer Games · 06 · Sources: Activision Support; heise online, Aug 2025</p>
+
+</section>
+
+</div>
+<div class="slide" id="s7" role="group" aria-roledescription="slide" aria-label="7 of 12: From password to signed session" aria-hidden="true">
+<section id="login" data-transition="fade" style="background:#0D1120;color:#EEF1F6;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6;letter-spacing:2px;text-transform:uppercase">02 · The trust chain</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">From password to signed session</h2>
+<div data-build-in="rise" style="--d:0s;position:absolute;left:128px;top:290px;width:288px;background:#161D33;border:1px solid #2A3352;border-radius:16px;padding:18px 22px;display:flex;flex-direction:column;gap:6px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">LOG IN</p><p style="font-size:24px;color:#A9B4C8">Argon2id + MFA</p>
+</div>
+<svg aria-hidden="true" data-build-in="fade" style="--d:0.35s;position:absolute;left:402px;top:331px;width:84px;height:28px" viewBox="0 0 84 28"><line x1="14" y1="14" x2="66" y2="14" stroke="#3FD4E6" stroke-width="3"/><polygon points="70,14 59.46900925731553,19.753106463250436 59.46900925731553,8.246893536749564" fill="#3FD4E6"/></svg>
+<div data-build-in="rise" style="--d:0.7s;position:absolute;left:472px;top:290px;width:288px;background:#161D33;border:1px solid #2A3352;border-radius:16px;padding:18px 22px;display:flex;flex-direction:column;gap:6px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">SESSION TOKEN</p><p style="font-size:24px;color:#A9B4C8">signed · minutes</p>
+</div>
+<svg aria-hidden="true" data-build-in="fade" style="--d:1.0499999999999998s;position:absolute;left:746px;top:331px;width:84px;height:28px" viewBox="0 0 84 28"><line x1="14" y1="14" x2="66" y2="14" stroke="#3FD4E6" stroke-width="3"/><polygon points="70,14 59.46900925731553,19.753106463250436 59.46900925731553,8.246893536749564" fill="#3FD4E6"/></svg>
+<div data-build-in="rise" style="--d:1.4s;position:absolute;left:816px;top:290px;width:288px;background:#161D33;border:1px solid #2A3352;border-radius:16px;padding:18px 22px;display:flex;flex-direction:column;gap:6px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">MATCHMAKER</p><p style="font-size:24px;color:#A9B4C8">checks signature</p>
+</div>
+<svg aria-hidden="true" data-build-in="fade" style="--d:1.75s;position:absolute;left:1090px;top:331px;width:84px;height:28px" viewBox="0 0 84 28"><line x1="14" y1="14" x2="66" y2="14" stroke="#3FD4E6" stroke-width="3"/><polygon points="70,14 59.46900925731553,19.753106463250436 59.46900925731553,8.246893536749564" fill="#3FD4E6"/></svg>
+<div data-build-in="rise" style="--d:2.0999999999999996s;position:absolute;left:1160px;top:290px;width:288px;background:#161D33;border:1px solid #2A3352;border-radius:16px;padding:18px 22px;display:flex;flex-direction:column;gap:6px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">CONNECT TOKEN</p><p style="font-size:24px;color:#A9B4C8">for one server</p>
+</div>
+<svg aria-hidden="true" data-build-in="fade" style="--d:2.4499999999999997s;position:absolute;left:1434px;top:331px;width:84px;height:28px" viewBox="0 0 84 28"><line x1="14" y1="14" x2="66" y2="14" stroke="#3FD4E6" stroke-width="3"/><polygon points="70,14 59.46900925731553,19.753106463250436 59.46900925731553,8.246893536749564" fill="#3FD4E6"/></svg>
+<div data-build-in="rise" style="--d:2.8s;position:absolute;left:1504px;top:290px;width:288px;background:#10263A;border:2px solid #3FD4E6;border-radius:16px;padding:18px 22px;display:flex;flex-direction:column;gap:6px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">GAME SERVER</p><p style="font-size:24px;color:#A9B4C8">key exchange, play</p>
+</div>
+<iframe class="emb" sandbox="allow-scripts" title="Animation" tabindex="-1" style="position:absolute;left:128px;top:440px;width:1664px;height:460px;border:0;display:block;background:transparent" data-src="<!doctype html><html><head><style>
+*{box-sizing:border-box;margin:0}body{background:transparent;overflow:hidden;color:#EEF1F6;font-family:system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,sans-serif;padding:4px}
+.m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.lbl{font-size:24px;color:#A9B4C8;letter-spacing:2px;margin-bottom:10px}
+#tok{font-size:28px;line-height:1.45;word-break:break-all;background:#161D33;border:2px solid #2A3352;border-radius:16px;padding:16px 24px;transition:border-color .4s}
+.h{color:#3FD4E6}.s{color:#9DB2FF}.dot{color:#7C87A0}
+.cols{display:flex;gap:24px;margin-top:16px}
+.box{flex:1;background:#121829;border:2px solid #2A3352;border-radius:16px;padding:14px 22px}
+.json{font-size:26px;line-height:1.5}
+.k{color:#A9B4C8}.am{color:#F5A524;font-weight:700}
+#st{margin-top:14px;font-size:30px;font-weight:700;min-height:44px}
+</style></head><body>
+<div class=&quot;lbl m&quot;>SESSION TOKEN = <span class=&quot;h&quot;>header</span> . payload . <span class=&quot;s&quot;>signature</span></div>
+<div id=&quot;tok&quot; class=&quot;m&quot;></div>
+<div class=&quot;cols&quot;>
+<div class=&quot;box&quot;><div class=&quot;lbl m&quot;>DECODED PAYLOAD (anyone can read it)</div><div class=&quot;json m&quot; id=&quot;js&quot;></div></div>
+<div class=&quot;box&quot;><div class=&quot;lbl m&quot;>SERVER CHECK</div><div class=&quot;json m&quot; id=&quot;ck&quot;></div></div>
+</div>
+<div id=&quot;st&quot;></div>
+<script>
+const E=i=>document.getElementById(i);
+const b64=s=>btoa(s).replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_');
+const H='eyJhbGciOiJIUzI1NiJ9',SIG='Xk2q9VbR7mN4tLpA0sWcYe8uJh3ZdF6gK1oT5iQvBwM';
+const pl=r=>'{&quot;p&quot;:&quot;p17&quot;,&quot;role&quot;:&quot;'+r+'&quot;,&quot;exp&quot;:1793480000}';
+function show(role,tam,check,stat,col){
+ const P=b64(pl(role));
+ E('tok').innerHTML='<span class=&quot;h&quot;>'+H+'</span><span class=&quot;dot&quot;>.</span><span style=&quot;color:'+(tam?'#F5A524':'#EEF1F6')+'&quot;>'+P+'</span><span class=&quot;dot&quot;>.</span><span class=&quot;s&quot;>'+SIG+'</span>';
+ E('tok').style.borderColor=tam?'#F5A524':'#2A3352';
+ E('js').innerHTML='<span class=&quot;k&quot;>p:</span> &quot;p17&quot; · <span class=&quot;k&quot;>role:</span> <span class=&quot;'+(tam?'am':'')+'&quot;>&quot;'+role+'&quot;</span><br><span class=&quot;k&quot;>exp:</span> 1793480000';
+ E('ck').innerHTML=check;E('st').textContent=stat;E('st').style.color=col||'#EEF1F6';}
+const ok='HMAC-SHA256(secret, header.payload)<br>= <span style=&quot;color:#9DB2FF&quot;>Xk2q9VbR…</span> <span style=&quot;color:#3FD4E6&quot;>✓ matches</span>';
+const bad='HMAC-SHA256(secret, header.payload)<br>= <span style=&quot;color:#F5A524&quot;>Qe7Lc0Zp… ≠ Xk2q9VbR… ✗</span>';
+const target='admin';let t=0;
+function tick(){t=(t+1)%26;
+ if(t<6)show('player',false,ok,'✓  Accepted: player p17, normal permissions','#3FD4E6');
+ else if(t<12){const n=Math.min(target.length,t-6);const r=n==0?'player':target.slice(0,n);show(r,true,'<span class=&quot;k&quot;>waiting…</span>','Attacker edits the payload: role → admin','#F5A524');}
+ else if(t<22)show('admin',true,bad,'✗  Rejected: without the server’s secret, nobody can re-sign it','#F5A524');
+ else show('player',false,'<span class=&quot;k&quot;>…</span>','','');}
+tick();setInterval(tick,450);
+</script></body></html>"></iframe>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7C87A0">Cryptography in Online Multiplayer Games · 07 · Token format shown: JWT‑style, HS256</p>
+
+</section>
+
+</div>
+<div class="slide" id="s8" role="group" aria-roledescription="slide" aria-label="8 of 12: Stopping replays and dupes" aria-hidden="true">
+<section id="replay" data-transition="fade" style="background:#0D1120;color:#EEF1F6;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6;letter-spacing:2px;text-transform:uppercase">02 · Freshness  →  03 · Item economy</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Stopping replays and dupes</h2>
+<iframe class="emb" sandbox="allow-scripts" title="Animation" tabindex="-1" style="position:absolute;left:128px;top:300px;width:760px;height:510px;border:0;display:block;background:transparent" data-src="<!doctype html><html><head><style>
+*{box-sizing:border-box;margin:0}body{background:transparent;overflow:hidden;color:#EEF1F6;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;width:760px;height:510px;position:relative}
+.lbl{font-size:24px;color:#A9B4C8;letter-spacing:2px}
+#in{position:absolute;left:0;top:38px;font-size:32px;font-weight:700;padding:8px 22px;border-radius:12px;background:#10263A;border:2px solid #3FD4E6;transition:opacity .35s}
+#g{position:absolute;left:0;top:116px;display:grid;grid-template-columns:repeat(4,174px);gap:10px}
+.c{height:70px;border-radius:12px;border:2px solid #2A3352;background:#121829;display:flex;align-items:center;justify-content:center;font-size:28px;color:#7C87A0;transition:all .3s}
+.on{background:#123B47;border-color:#3FD4E6;color:#EEF1F6}
+.bad{background:#3a2a0c;border-color:#F5A524;color:#F5A524}
+#st{position:absolute;left:0;top:450px;width:760px;font-size:28px;font-weight:700;font-family:system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,sans-serif}
+</style></head><body>
+<div class=&quot;lbl&quot;>INCOMING PACKET</div><div id=&quot;in&quot;></div>
+<div id=&quot;g&quot;></div><div id=&quot;st&quot;></div>
+<script>
+const E=i=>document.getElementById(i),g=E('g'),B=1040,cells=[];
+for(let i=0;i<16;i++){const d=document.createElement('div');d.className='c';d.textContent='#'+(B+i);g.appendChild(d);cells.push(d)}
+const seq=[1040,1041,1043,1042,1044,1045,1046,1043,1047,1048,1012,1049,1050,1051];
+let seen=new Set(),i=0;
+function step(){
+ if(i>=seq.length+3){i=0;seen=new Set();cells.forEach(c=>c.className='c');E('st').textContent='';}
+ if(i>=seq.length){E('in').style.opacity=0;i++;return}
+ const n=seq[i],inb=E('in');inb.style.opacity=1;inb.textContent='#'+n+' →';
+ cells.forEach(c=>{if(c.classList.contains('bad'))c.className='c on'});
+ let msg,col='#3FD4E6';
+ if(n<B){msg='#'+n+' older than the window → dropped';col='#F5A524';inb.style.borderColor='#F5A524'}
+ else if(seen.has(n)){msg='#'+n+' already seen → dropped (replay)';col='#F5A524';cells[n-B].className='c bad';inb.style.borderColor='#F5A524'}
+ else{const late=[...seen].some(s=>s>n);seen.add(n);cells[n-B].className='c on';msg='#'+n+(late?' late but unseen → accepted':' new → accepted');inb.style.borderColor='#3FD4E6'}
+ E('st').textContent=msg;E('st').style.color=col;i++;}
+step();setInterval(step,1100);
+</script></body></html>"></iframe>
+<p data-build-in="fade" style="--d:0s;position:absolute;left:128px;top:830px;width:760px;font-size:24px;line-height:1.4;color:#A9B4C8">Each packet’s counter also feeds the AEAD nonce. A sliding window accepts late packets once and drops duplicates and stale ones.</p>
+<h3 data-build-in="rise" style="--d:0.35s;position:absolute;left:976px;top:300px;width:816px;font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700;line-height:1.2">Item dupes are logic bugs, not broken crypto</h3>
+<div data-build-in="fade" style="--d:0.7s;position:absolute;left:976px;top:370px;width:816px;display:grid;grid-template-columns:400px 352px;padding:14px 32px;border-bottom:2px solid #F5A524">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#A9B4C8">CAUSE</p><p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#A9B4C8">FIX</p>
+</div>
+<div data-build-in="rise" style="--d:1.0499999999999998s;position:absolute;left:976px;top:434px;width:816px;display:grid;grid-template-columns:400px 352px;padding:16px 32px;background:#131A2E;border-bottom:1px solid #2A3352">
+<p style="font-size:24px;line-height:1.4;font-weight:600">Two trades spend one item at the same time</p><p style="font-size:24px;line-height:1.4;color:#3FD4E6">Atomic transactions, row locks</p>
+</div>
+<div data-build-in="rise" style="--d:1.4s;position:absolute;left:976px;top:536px;width:816px;display:grid;grid-template-columns:400px 352px;padding:16px 32px;background:#0D1120;border-bottom:1px solid #2A3352">
+<p style="font-size:24px;line-height:1.4;font-weight:600">A lag‑retried “confirm trade” lands twice</p><p style="font-size:24px;line-height:1.4;color:#3FD4E6">Idempotency key on every write</p>
+</div>
+<div data-build-in="rise" style="--d:1.75s;position:absolute;left:976px;top:638px;width:816px;display:grid;grid-template-columns:400px 352px;padding:16px 32px;background:#131A2E;border-bottom:1px solid #2A3352">
+<p style="font-size:24px;line-height:1.4;font-weight:600">Server crashes after giving the item, before taking the gold</p><p style="font-size:24px;line-height:1.4;color:#3FD4E6">Commit both sides in one transaction</p>
+</div>
+<div data-build-in="rise" style="--d:2.0999999999999996s;position:absolute;left:976px;top:773px;width:816px;display:grid;grid-template-columns:400px 352px;padding:16px 32px;background:#0D1120;border-bottom:1px solid #2A3352">
+<p style="font-size:24px;line-height:1.4;font-weight:600">The client tells the server what it owns</p><p style="font-size:24px;line-height:1.4;color:#F5A524">Server authority; client only displays</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7C87A0">Cryptography in Online Multiplayer Games · 08</p>
+
+</section>
+
+</div>
+<div class="slide push" id="s9" role="group" aria-roledescription="slide" aria-label="9 of 12: What you own, and how it’s enforced" aria-hidden="true">
+<section id="license" data-transition="push" style="background:#0D1120;color:#EEF1F6;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#F5A524;letter-spacing:2px;text-transform:uppercase">Part 03 · Digital ownership</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">What you own, and how it’s enforced</h2>
+<div data-build-in="rise" style="--d:0s;position:absolute;left:128px;top:300px;width:760px;background:#161D33;border:1px solid #2A3352;border-radius:20px;padding:32px 40px;display:flex;flex-direction:column;gap:8px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#F5A524">1 JAN 2025</p>
+<p style="font-size:24px;line-height:1.4">California’s AB 2426: a digital game must be sold as a license.</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#F5A524;padding:12px 0 0 0">JAN 2026</p>
+<p style="font-size:24px;line-height:1.4">Class actions reach games; GameStop sued over its storefront.</p>
+</div>
+<div data-build-in="rise" style="--d:0.35s;position:absolute;left:128px;top:620px;width:760px;background:#161D33;border:1px solid #2A3352;border-radius:20px;padding:28px 40px;display:flex;flex-direction:column">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#EEF1F6"><span style="color:#F5A524">GRANT</span> {player:<span style="color:#3FD4E6">"p17"</span>, item:<span style="color:#3FD4E6">"sword#A91F"</span>,<br>&#160;&#160;&#160;&#160;&#160;&#160;serial:<span style="color:#3FD4E6">88213</span>, issued:<span style="color:#3FD4E6">"2026-11-01"</span>}<br><span style="color:#F5A524">SIG</span>&#160;&#160;&#160;Ed25519(inventory_key, GRANT)<br><span style="color:#7C87A0">// only the server signs; anyone verifies</span></p>
+</div>
+<p data-build-in="fade" style="--d:0.7s;position:absolute;left:128px;top:840px;width:760px;font-size:24px;line-height:1.4;font-weight:600;color:#F5A524">The rules last as long as the servers and keys do.</p>
+<iframe class="emb" sandbox="allow-scripts" title="Animation" tabindex="-1" style="position:absolute;left:936px;top:300px;width:856px;height:560px;border:0;display:block;background:transparent" data-src="<!doctype html><html><head><style>
+*{box-sizing:border-box;margin:0}body{background:transparent;overflow:hidden;color:#EEF1F6;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;width:856px;height:560px}
+.lbl{font-size:24px;color:#A9B4C8;letter-spacing:2px;margin-bottom:12px}
+.blk{background:#161D33;border:2px solid #2A3352;border-radius:16px;padding:14px 22px;opacity:0;transform:translateY(16px);transition:all .45s}
+.blk.v{opacity:1;transform:none}.blk.x{border-color:#F5A524;background:#2a200c}
+.t{font-size:28px;white-space:nowrap}.m{font-size:24px;color:#A9B4C8;margin-top:6px}
+.a{color:#F5A524;font-weight:700}.ok{color:#3FD4E6}
+.lk{height:34px;font-size:24px;color:#3B4770;padding-left:40px;line-height:34px}
+#st{margin-top:16px;font-size:28px;font-weight:700;font-family:system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,sans-serif;min-height:40px}
+</style></head><body>
+<div class=&quot;lbl&quot;>TRADE LOG · each block hashes the one before</div>
+<div class=&quot;blk&quot; id=&quot;b0&quot;></div><div class=&quot;lk&quot;>&amp;#8595; prev</div>
+<div class=&quot;blk&quot; id=&quot;b1&quot;></div><div class=&quot;lk&quot;>&amp;#8595; prev</div>
+<div class=&quot;blk&quot; id=&quot;b2&quot;></div>
+<div id=&quot;st&quot;></div>
+<script>
+const E=i=>document.getElementById(i);
+function h(s){let x=0x811c9dc5;for(const c of s){x^=c.charCodeAt(0);x=Math.imul(x,16777619)>>>0}return x.toString(16).padStart(8,'0').slice(0,6)}
+const T0=['MINT  sword#A91F → p17','TRADE sword#A91F p17 → p42','TRADE sword#A91F p42 → p08'];
+let T,P,Hs;
+function build(){P=['000000'];Hs=[];for(let i=0;i<3;i++){Hs[i]=h(P[i]+T[i]);P[i+1]=Hs[i]}}
+function draw(k,tam){for(let i=0;i<3;i++){const b=E('b'+i);
+ const txt=(tam&amp;&amp;i==1)?T[i].replace('p99','<span class=&quot;a&quot;>p99</span>'):T[i];
+ const hh=(tam&amp;&amp;i==1)?'<span class=&quot;a&quot;>'+h(P[1]+T[1])+'</span>':Hs[i];
+ const pv=(tam&amp;&amp;i==2)?'<span class=&quot;a&quot;>'+P[2]+' ≠ '+h(P[1]+T[1])+'</span>':P[i];
+ b.innerHTML='<div class=&quot;t&quot;>#'+(i+1)+'  '+txt+'</div><div class=&quot;m&quot;>prev '+pv+' · hash '+hh+'</div>';
+ b.className='blk'+(i<k?' v':'')+((tam&amp;&amp;i==2)?' x':'');}}
+let s=0;
+function step(){s=(s+1)%10;
+ if(s==1){T=T0.slice();build();draw(1);E('st').textContent='';}
+ else if(s==2)draw(2);
+ else if(s==3)draw(3);
+ else if(s==4){E('st').innerHTML='<span class=&quot;ok&quot;>✓ Chain valid: every block points at the hash before it</span>';}
+ else if(s==6){T[1]=T0[1].replace('p42','p99');draw(3,true);E('st').innerHTML='<span class=&quot;a&quot;>Attacker rewrites block #2 to steal the sword…</span>';}
+ else if(s==7){E('st').innerHTML='<span class=&quot;a&quot;>✗ Block #3 points at a hash that no longer exists: edit detected</span>';}
+}
+T=T0.slice();build();step();setInterval(step,1500);
+</script></body></html>"></iframe>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7C87A0">Cryptography in Online Multiplayer Games · 09 · Sources: Greenberg Traurig (Dec 2024); Frankfurt Kurnit (Jan 2026)</p>
+
+</section>
+
+</div>
+<div class="slide" id="s10" role="group" aria-roledescription="slide" aria-label="10 of 12: Provably fair loot with commit–reveal" aria-hidden="true">
+<section id="fair" data-transition="fade" style="background:#0D1120;color:#EEF1F6;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#F5A524;letter-spacing:2px;text-transform:uppercase">03 · Fair play</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Provably fair loot with commit–reveal</h2>
+<div data-build-in="rise" style="--d:0s;position:absolute;left:128px;top:300px;width:700px;display:flex;flex-direction:column;gap:6px;border-left:4px solid #3FD4E6;padding:0 0 0 24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">1 · COMMIT</p>
+<p style="font-size:24px;line-height:1.4">Before the match the server publishes SHA‑256(seed). It can’t change the seed later.</p>
+</div>
+<div data-build-in="rise" style="--d:0.35s;position:absolute;left:128px;top:440px;width:700px;display:flex;flex-direction:column;gap:6px;border-left:4px solid #3FD4E6;padding:0 0 0 24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">2 · ROLL</p>
+<p style="font-size:24px;line-height:1.4">Each drop = HMAC(seed, client seed + round), so nothing is pre‑picked.</p>
+</div>
+<div data-build-in="rise" style="--d:0.7s;position:absolute;left:128px;top:580px;width:700px;display:flex;flex-direction:column;gap:6px;border-left:4px solid #3FD4E6;padding:0 0 0 24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">3 · REVEAL</p>
+<p style="font-size:24px;line-height:1.4">Afterwards the seed is published. Anyone re‑hashes it and re‑rolls every drop.</p>
+</div>
+<div data-build-in="fade" style="--d:1.0499999999999998s;position:absolute;left:128px;top:730px;width:700px;background:#2A200C;border:1px solid #F5A524;border-radius:16px;padding:24px 28px;display:flex;flex-direction:column;gap:6px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#F5A524">PEER‑TO‑PEER VERSION</p>
+<p style="font-size:24px;line-height:1.4">Each player commits, then all reveal; the XOR is the roll. No reveal = forfeit.</p>
+</div>
+<iframe class="emb" sandbox="allow-scripts" title="Animation" tabindex="-1" style="position:absolute;left:900px;top:300px;width:892px;height:600px;border:0;display:block;background:transparent" data-src="<!doctype html><html><head><style>
+*{box-sizing:border-box;margin:0}body{background:transparent;overflow:hidden;color:#EEF1F6;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;width:892px;height:600px}
+.p{background:#161D33;border:2px solid #2A3352;border-radius:16px;padding:16px 22px;margin-bottom:14px;transition:border-color .4s,opacity .4s}
+.l{font-size:24px;color:#A9B4C8;letter-spacing:1px}.v{font-size:28px;margin-top:4px;min-height:38px}
+.rolls{display:flex;gap:12px;margin-top:8px;min-height:56px}
+.r{font-size:26px;padding:8px 14px;border-radius:10px;background:#1E2742;border:2px solid #3B4770;animation:pop .35s ease}
+.r.rare{border-color:#3FD4E6;color:#3FD4E6}.r.leg{border-color:#F5A524;color:#F5A524}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+#st{font-family:system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,sans-serif;font-size:28px;font-weight:700;margin-top:6px;min-height:80px;line-height:1.35}
+.ok{color:#3FD4E6}.bad{color:#F5A524}
+</style></head><body>
+<div class=&quot;p&quot; id=&quot;sv&quot;><div class=&quot;l&quot;>SERVER · COMMIT (published before the match)</div><div class=&quot;v&quot; id=&quot;cm&quot;></div></div>
+<div class=&quot;p&quot; id=&quot;pl&quot;><div class=&quot;l&quot;>PLAYER p17 · CLIENT SEED</div><div class=&quot;v&quot; id=&quot;cs&quot;></div><div class=&quot;rolls&quot; id=&quot;rl&quot;></div></div>
+<div class=&quot;p&quot; id=&quot;rv&quot;><div class=&quot;l&quot;>AFTER THE MATCH · REVEAL</div><div class=&quot;v&quot; id=&quot;sd&quot;></div></div>
+<div id=&quot;st&quot;></div>
+<script>
+const E=i=>document.getElementById(i);
+function f(s){let x=0x811c9dc5;for(const c of s){x^=c.charCodeAt(0);x=Math.imul(x,16777619)>>>0}return x}
+const hx=s=>(f(s).toString(16).padStart(8,'0')+f(s+'#').toString(16).padStart(8,'0'));
+const SEED='7d41e0b9c2',FAKE='1b07aa53f0',CS='p17-a8c2';
+const C=hx(SEED),roll=(sd,r)=>f(sd+CS+r)%100;
+const tier=n=>n>=95?['leg','Legendary']:n>=80?['rare','Rare']:['','Common'];
+let s=-1;
+function chip(n,r){const [c,t]=tier(n);const d=document.createElement('div');d.className='r '+c;d.textContent='#'+r+' → '+String(n).padStart(2,'0')+' '+t;E('rl').appendChild(d)}
+function step(){s=(s+1)%12;
+ if(s==0){E('cm').innerHTML='';E('cs').textContent='';E('rl').innerHTML='';E('sd').innerHTML='';E('st').innerHTML='';E('rv').style.borderColor='#2A3352';E('sv').style.borderColor='#2A3352'}
+ if(s==1){E('cm').innerHTML='🔒 SHA-256(seed) = '+C.slice(0,8)+'…'+C.slice(-4);E('sv').style.borderColor='#3FD4E6';E('st').innerHTML='1 · The server locks in a secret seed it can no longer change'}
+ if(s==2){E('cs').textContent=CS;E('st').innerHTML='2 · The player adds a seed of their own'}
+ if(s>=3&amp;&amp;s<=5){chip(roll(SEED,s-2),s-2);E('st').innerHTML='Drops = HMAC(seed, client seed + round)'}
+ if(s==6){E('sd').innerHTML='seed = '+SEED+' → hash '+C.slice(0,8)+'…'+C.slice(-4);E('rv').style.borderColor='#3FD4E6';E('st').innerHTML='<span class=&quot;ok&quot;>✓ Hash matches the commit and every re-roll matches: provably fair</span>'}
+ if(s==9){const H=hx(FAKE);E('sd').innerHTML='seed = '+FAKE+' → hash '+H.slice(0,8)+'…'+H.slice(-4);E('rv').style.borderColor='#F5A524';E('st').innerHTML='<span class=&quot;bad&quot;>✗ A server that swaps seeds to rig drops is caught: the hash no longer matches the commit</span>'}
+}
+step();setInterval(step,1500);
+</script></body></html>"></iframe>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7C87A0">Cryptography in Online Multiplayer Games · 10</p>
+
+</section>
+
+</div>
+<div class="slide push" id="s11" role="group" aria-roledescription="slide" aria-label="11 of 12: Relays keep player IPs secret" aria-hidden="true">
+<section id="relays" data-transition="push" style="background:#0D1120;color:#EEF1F6;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6;letter-spacing:2px;text-transform:uppercase">Beyond the basics · Network privacy</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Relays keep player IPs secret</h2>
+<iframe class="emb" sandbox="allow-scripts" title="Animation" tabindex="-1" style="position:absolute;left:128px;top:300px;width:1000px;height:600px;border:0;display:block;background:transparent" data-src="<!doctype html><html><body style=&quot;margin:0;background:transparent;overflow:hidden&quot;><canvas id=&quot;c&quot; width=&quot;1000&quot; height=&quot;600&quot;></canvas><script>
+const c=document.getElementById('c'),g=c.getContext('2d'),W=1000,H=600;
+const P={x:120,y:270},S={x:860,y:270},R={x:500,y:130},A={x:500,y:470};
+const SANS='system-ui,-apple-system,&quot;Segoe UI&quot;,Roboto,sans-serif',MONO='ui-monospace,Menlo,Consolas,monospace';
+let t=0,pk=[],load=0;const PH=480;
+function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+function node(n,label,sub,col,fill){g.fillStyle=fill||'#161D33';rr(n.x-95,n.y-42,190,84,16);g.fill();g.strokeStyle=col;g.lineWidth=3;g.stroke();
+ g.fillStyle='#EEF1F6';g.font='700 26px '+SANS;g.textAlign='center';g.textBaseline='middle';g.fillText(label,n.x,n.y);
+ if(sub){g.font='24px '+MONO;g.fillStyle=col;g.fillText(sub,n.x,n.y+70)}}
+function pos(path,u){const segs=path.length-1,k=Math.min(segs-1,Math.floor(u*segs)),f=u*segs-k,a=path[k],b=path[k+1];return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f}}
+function line(path,col,dash){g.strokeStyle=col;g.lineWidth=3;g.setLineDash(dash?[10,10]:[]);g.beginPath();g.moveTo(path[0].x,path[0].y);for(const p of path.slice(1))g.lineTo(p.x,p.y);g.stroke();g.setLineDash([])}
+function draw(){t=(t+1)%(PH*2);const relay=t>=PH,lt=t%PH;g.clearRect(0,0,W,H);
+ if(lt==0){pk=[];load=0}
+ const route=relay?[P,R,S]:[P,S],atk=relay?[A,R]:[A,S];
+ g.font='700 26px '+MONO;g.textAlign='left';g.textBaseline='top';g.fillStyle=relay?'#3FD4E6':'#F5A524';g.fillText(relay?'VIA RELAY NETWORK':'DIRECT CONNECTION',0,0);
+ line(route,'#3B4770');if(lt>90)line(atk,'#5a4520',true);
+ if(lt%18==0)pk.push({p:route,u:0,v:0.012,col:'#3FD4E6',game:1});
+ if(lt>90&amp;&amp;lt%2==0)for(let i=0;i<2;i++)pk.push({p:atk,u:0,v:0.016+Math.random()*0.01,col:'#F5A524',j:(Math.random()-.5)*60});
+ const down=!relay&amp;&amp;load>60;
+ for(const q of pk){q.u+=q.v;let o=pos(q.p,Math.min(q.u,1));
+  if(q.j){o.x+=q.j*(1-q.u)}
+  if(q.game&amp;&amp;down&amp;&amp;q.u>0.5){q.dead=1;g.fillStyle='#F5A524';g.font='700 28px '+SANS;g.textAlign='center';g.fillText('✗',o.x,o.y-14);continue}
+  if(q.j&amp;&amp;relay&amp;&amp;q.u>0.72){q.dead=1;continue}
+  g.fillStyle=q.col;g.beginPath();g.arc(o.x,o.y,q.game?9:5,0,7);g.fill();
+  if(q.u>=1){q.dead=1;if(q.j&amp;&amp;!relay)load++}}
+ pk=pk.filter(q=>!q.dead);if(!relay)load=Math.max(0,load-0.3);
+ node(P,'Player',relay?'IP hidden':'IP exposed',relay?'#3FD4E6':'#F5A524');
+ node(S,'Game server',relay?'IP never revealed':'203.0.113.7',down?'#F5A524':'#3FD4E6',down?'#2A200C':null);
+ if(relay){const k=(Math.sin(t/8)+1)/2;g.strokeStyle='rgba(63,212,230,'+(0.3+0.5*k)+')';g.lineWidth=4;g.beginPath();g.arc(R.x,R.y,70+6*k,0,7);g.stroke();node(R,'Relay','','#3FD4E6');g.font='24px '+MONO;g.fillStyle='#3FD4E6';g.textAlign='left';g.textBaseline='middle';g.fillText('rate-limits floods',R.x+110,R.y)}
+ if(lt>60){g.fillStyle='#2A200C';rr(A.x-95,A.y-36,190,72,16);g.fill();g.strokeStyle='#F5A524';g.lineWidth=3;g.stroke();g.fillStyle='#F5A524';g.font='700 26px '+SANS;g.textAlign='center';g.textBaseline='middle';g.fillText('Attacker',A.x,A.y);
+  g.font='24px '+MONO;g.fillText(relay?'sees only the relay':'targets 203.0.113.7',A.x,A.y+62)}
+ g.font='700 28px '+SANS;g.textAlign='left';g.textBaseline='bottom';
+ if(!relay&amp;&amp;down){g.fillStyle='#F5A524';g.fillText('✗ Public server IP: the flood knocks the match offline',0,H-4)}
+ else if(relay&amp;&amp;lt>150){g.fillStyle='#3FD4E6';g.fillText('✓ The flood dies at the relay; the match keeps running',0,H-4)}
+ requestAnimationFrame(draw)}
+draw();
+</script></body></html>"></iframe>
+<div data-build-in="rise" style="--d:0s;position:absolute;left:1176px;top:300px;width:616px;display:flex;flex-direction:column;gap:6px;border-left:4px solid #F5A524;padding:0 0 0 24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#F5A524">THE PROBLEM</p>
+<p style="font-size:24px;line-height:1.4">A direct connection shows every peer your IP address, an easy target for a flood that ends the match.</p>
+</div>
+<div data-build-in="rise" style="--d:0.35s;position:absolute;left:1176px;top:480px;width:616px;display:flex;flex-direction:column;gap:6px;border-left:4px solid #3FD4E6;padding:0 0 0 24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">VALVE’S STEAM DATAGRAM RELAY</p>
+<p style="font-size:24px;line-height:1.4">Traffic goes through relays, so IP addresses are never revealed. Everything received is authenticated, encrypted and rate‑limited.</p>
+</div>
+<div data-build-in="rise" style="--d:0.7s;position:absolute;left:1176px;top:696px;width:616px;display:flex;flex-direction:column;gap:6px;border-left:4px solid #3FD4E6;padding:0 0 0 24px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#3FD4E6">CRYPTO DOES THE GATEKEEPING</p>
+<p style="font-size:24px;line-height:1.4">Relay tickets let one client reach one server for a limited time; players hold short‑term certificates.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#7C87A0">Cryptography in Online Multiplayer Games · 11 · Source: Steamworks documentation, Steam Datagram Relay</p>
+
+</section>
+
+</div>
+<div class="slide" id="s12" role="group" aria-roledescription="slide" aria-label="12 of 12: Getting ready for quantum computers" aria-hidden="true">
+<section id="pq" data-transition="fade" style="background:#F2EFE8;color:#141827;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#0B6875;letter-spacing:2px;text-transform:uppercase">Beyond the basics · The quantum future</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-1px">Getting ready for quantum computers</h2>
+<div data-build-in="rise" style="--d:0s;position:absolute;left:128px;top:300px;width:800px;background:#FBFAF6;border:1px solid #DDD8CC;border-radius:20px;padding:28px 36px;display:flex;flex-direction:column;gap:10px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#9A5B00">THE THREAT · HARVEST NOW, DECRYPT LATER</p>
+<p style="font-size:32px;line-height:1.4;font-weight:600">Traffic recorded today can be opened once a large quantum computer breaks X25519, ECDSA and RSA.</p>
+<p style="font-size:24px;line-height:1.4;color:#4A5268">AES‑256 and SHA‑256 stay safe. Only key exchange and signatures need replacing; logins, payments and chat matter more than match traffic.</p>
+</div>
+<div data-build-in="rise" style="--d:0.35s;position:absolute;left:976px;top:300px;width:816px;display:flex;flex-direction:column;gap:18px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#0B6875">ALREADY SHIPPING</p>
+<div style="display:grid;grid-template-columns:180px 616px;gap:20px;border-left:3px solid #0B6875;padding:4px 0 4px 20px"><p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#0B6875">AUG 2024</p><p style="font-size:24px;line-height:1.4">NIST publishes ML‑KEM (FIPS 203)</p></div>
+<div style="display:grid;grid-template-columns:180px 616px;gap:20px;border-left:3px solid #0B6875;padding:4px 0 4px 20px"><p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#0B6875">NOV 2024</p><p style="font-size:24px;line-height:1.4">Chrome 131 makes hybrid X25519MLKEM768 its default key exchange</p></div>
+<div style="display:grid;grid-template-columns:180px 616px;gap:20px;border-left:3px solid #0B6875;padding:4px 0 4px 20px"><p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#0B6875">APR 2026</p><p style="font-size:24px;line-height:1.4">Over two‑thirds of human TLS traffic to Cloudflare uses it</p></div>
+</div>
+<p data-build-in="fade" style="--d:0.7s;position:absolute;left:128px;top:700px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#4A5268">KEY SHARE SIZE · the hybrid share alone overflows one safe 1,200‑byte datagram</p>
+<p data-build-in="fade" style="--d:1.0499999999999998s;position:absolute;left:128px;top:752px;width:300px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#141827">X25519</p>
+<div data-build-in="left" style="--d:1.4s;position:absolute;left:448px;top:752px;width:32px;height:32px;background:#0B6875;border-radius:4px"></div>
+<p data-build-in="fade" style="--d:1.75s;position:absolute;left:496px;top:752px;width:200px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;color:#0B6875">32 B</p>
+<p data-build-in="fade" style="--d:2.0999999999999996s;position:absolute;left:128px;top:812px;width:300px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#141827">X25519MLKEM768</p>
+<div data-build-in="left" style="--d:2.4499999999999997s;position:absolute;left:448px;top:812px;width:1200px;height:32px;background:#0B6875;border-radius:4px"></div>
+<p data-build-in="fade" style="--d:2.8s;position:absolute;left:1660px;top:812px;width:132px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;color:#0B6875">1,216 B</p>
+<div data-build-in="fade" style="--d:3.15s;position:absolute;left:1632px;top:740px;width:0px;height:120px;border-left:4px dashed #9A5B00"></div>
+<p data-build-in="fade" style="--d:3.15s;position:absolute;left:1292px;top:864px;width:500px;text-align:right;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#9A5B00">1,200 B safe datagram</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;color:#5E6578">Cryptography in Online Multiplayer Games · 12 · Sources: NIST FIPS 203; Cloudflare via Encryption Consulting and SDxCentral, 2026</p>
+
+</section>
+
+</div>
+</div></div>
+<div class="hit" id="hl" aria-hidden="true"></div><div class="hit" id="hr" aria-hidden="true"></div>
+<div id="bar"><div id="prog"></div></div>
+<div id="notes" aria-live="polite"></div>
+<div id="help">← → or click to navigate · F fullscreen · N speaker notes</div>
+<nav id="ui" aria-label="Presentation controls">
+<button id="prev" aria-label="Previous slide">←</button><span id="count"></span><button id="next" aria-label="Next slide">→</button>
+<button id="nb" aria-label="Toggle speaker notes">Notes</button><button id="fs" aria-label="Toggle fullscreen">⛶</button>
+<a href="lab/" target="_blank" rel="noopener">Crypto Lab ↗</a>
+</nav>
+<script>
+const NOTES=["Welcome. Every time you join a match, your machine and a server you have never met agree on secret keys, prove who they are, and start exchanging dozens of packets a second, all within a few hundred milliseconds. This talk walks through the three jobs cryptography does in online games: encrypting traffic, authenticating everyone involved, and deciding who owns digital items and games. The animation on the right is a reminder that what travels over the wire should look like random bytes to anyone who isn't supposed to read it.","Roadmap first: the talk has three parts, shown along the bottom of this slide. Encryption keeps match traffic private and tamper-evident, sixty times a second. Authentication proves who the player, the server and the machine really are. Ownership decides who holds an item or a game, and for how long. Before choosing algorithms, list what attackers actually want. Each row maps an attack to the security property that defends against it. Sniffing on shared Wi-Fi or a compromised router breaks confidentiality. Forging or modifying packets breaks integrity. Pretending to be another player, or standing up a fake server, breaks authentication. Replaying a packet that was valid once, like a purchase, breaks freshness. And denying a trade you made is a non-repudiation problem, solved with digital signatures and logs. Keep this table in mind: every technique in the rest of the talk defends one of these rows.","Almost everything in this talk is built from three primitives. Symmetric ciphers like AES-GCM and ChaCha20-Poly1305 use one shared key; they are extremely fast and protect every gameplay packet. Asymmetric cryptography uses key pairs: X25519 lets two strangers agree on a shared secret over a public network, and Ed25519 or RSA signatures let anyone verify that a message came from the holder of a private key. Hashes and MACs produce fingerprints: HMAC proves a token wasn't edited, and slow password hashes like Argon2id protect stored passwords if a database leaks.\n\nThe dark strip explains why games use them the way they do. At 60 frames per second you have about 16.7 milliseconds per frame for everything, so per-packet crypto must be cheap; modern CPUs do AES-GCM in hardware, so it costs microseconds. Real-time games use UDP because a late position update is useless; TCP would stall waiting to resend it, so each packet must be decryptable on its own even if the one before it was lost. And packets are small: QUIC requires paths that carry at least 1,200-byte datagrams, and the authentication tag AEAD adds is only 16 bytes. The pattern: do the expensive public-key handshake once, then switch to symmetric authenticated encryption for every packet.","This loops on its own; narrate it as it plays. Step one: the client builds a packet with a small header (sequence number, player id) and a payload such as a position and a fire button. Step two: AES-256-GCM encrypts the payload using the session key and a nonce derived from the sequence number, so every packet gets a unique nonce. GCM is an AEAD cipher: authenticated encryption with associated data. The header stays readable so routers and the server can process it, but it is still covered by the 16-byte authentication tag. Step three: the server checks the tag, then decrypts. Step four: an attacker flips a single bit. Step five: the tag no longer matches and the packet is dropped before the game sees it. Important rule: never reuse a nonce with the same key; with GCM that breaks both secrecy and integrity.\n\nThe strip along the bottom shows that you rarely build this yourself. Valve's open-source GameNetworkingSockets, the same API used in the Steamworks SDK, documents its design in its README: AES-GCM-256 for every packet, Curve25519 for key exchange and certificate signatures, and shared-key derivation and per-packet IVs based on Google's QUIC. For browser and mobile games, QUIC and WebTransport carry a full TLS 1.3 handshake inside UDP. Browser peer-to-peer games over WebRTC data channels get DTLS, TLS adapted for datagrams. Use a vetted transport: rolling your own packet crypto is where nonce reuse and timing bugs creep in.","This is the classic paint-mixing picture of Diffie–Hellman key exchange. Alice, the player, and Bob, the server, both know a public starting colour. Each mixes in a secret colour and sends only the mix. An eavesdropper sees the public colour and both mixes, but un-mixing paint is hard, just as recovering the private key from an elliptic-curve public key is computationally infeasible. Each side then adds its own secret to the mix it received, and both end up with the same colour: the shared secret. In real stacks this is X25519 elliptic-curve Diffie–Hellman. The raw shared secret is then fed into a key-derivation function such as HKDF to produce separate keys for client-to-server and server-to-client traffic. One caveat: plain Diffie–Hellman doesn't tell you who you are talking to. The server must also sign its half, otherwise a man in the middle can run two exchanges. That's where certificates and authentication come in.","This is the most important limit to understand, and it opens part two. Transport encryption protects the wire, but the player's own machine holds the session key, because it has to decrypt the traffic to render the game. A cheat running on that machine reads the decrypted state straight out of memory, so encryption cannot stop wallhacks or aimbots on its own.\n\nDefence one is architectural. Make the server authoritative: it simulates the game and treats client input as requests, not facts. And use interest management, sometimes called fog-of-war culling: don't send a player the position of an enemy behind a wall in the first place.\n\nDefence two, on the right, is attestation: making the client prove it hasn't been tampered with, using signatures all the way down. Code signing: the launcher and anti-cheat check the publisher's signature on executables and patches. Secure Boot: firmware only loads bootloaders and kernels signed by trusted keys, which makes it much harder for a cheat driver to load before the anti-cheat. TPM 2.0: a hardware chip records measurements of each boot stage and can produce a signed report. Activision's support pages say TPM 2.0 and Secure Boot are required for Call of Duty: Black Ops 7 and Warzone, and EA requires them for Battlefield 6. The trade-off: players with older hardware must change firmware settings or can't play, Linux players are generally locked out by these anti-cheat systems, and kernel-level anti-cheat raises its own privacy and security questions. Either way, the server should never depend on the client being honest.","The top row is a typical chain of trust from login to gameplay. Log in: the server never stores the password itself, only a slow, salted hash such as Argon2id, so a database leak doesn't hand out passwords; multi-factor authentication or a platform sign-in such as Steam, Xbox or PlayStation adds another layer. Session token: the auth server issues a short-lived, signed token, valid for minutes. Matchmaker: verifies that signature without calling the auth server and chooses a game server. Connect token: the backend encrypts a token with a key only it and that one game server share, valid for a few seconds, so it can't be stolen and reused later. Game server: opens the connect token, learns who the player is and which keys to use, runs the key exchange, and play begins. Every hop checks a signature or decrypts a token; nothing trusts the client's word.\n\nThe animation below zooms into the session token. JWT-style tokens are a header, a payload and a signature, each base64url-encoded and joined with dots. The payload is only encoded, not encrypted: anyone can decode it, so never put secrets in it. What protects it is the signature, here an HMAC-SHA256 keyed with a secret only the servers know. The attacker edits the role from player to admin; the server recomputes the HMAC, gets a different value, and rejects the token. For tokens checked by many services, an asymmetric signature such as Ed25519 is often better: the auth server signs with a private key and every other service verifies with the public key, so a compromised matchmaker can't mint tokens. Classic JWT pitfalls: accepting alg \"none\", confusing HMAC and RSA keys, and tokens that never expire.","Two ways the same action gets counted twice. Left, replays at the network layer. Encryption and authentication tell you a packet is genuine, not that it's new: an attacker who records a valid packet can resend it and the tag still checks out. The fix is a sequence number on every packet. Because it's used to build the nonce, it can't be changed without breaking the tag. The receiver keeps a sliding window, a small bitmap of recently seen numbers, the same idea IPsec uses. In the animation, 1042 arrives after 1043 and is accepted because it hasn't been seen; reordering is normal. Then 1043 arrives again and is dropped as a replay, and 1012 is so old it falls outside the window.\n\nRight, duplication in the item economy. Dupes almost never come from broken cryptography: signatures prove a grant came from the server, but don't stop the server from granting twice. Race conditions, where two trades consume the same item concurrently, are fixed with atomic database transactions and locking. Retried requests, where a laggy client retries \"confirm trade\" and both copies are processed, are fixed with an idempotency key so each logical action runs once; use the same keys for purchases. Crash rollbacks, where the server gives the item, crashes, and rolls back the payment but not the item, are fixed by committing both sides in a single transaction. And client-side inventory, trusting the client to report what it owns, is the \"client is the enemy\" lesson again. Unique serial numbers on items make dupes easy to detect after the fact.","Part three, digital ownership. Start with the legal reality: most digital game \"purchases\" are licenses. California made that explicit: AB 2426, signed in September 2024 and effective January 1, 2025, requires sellers of digital goods, explicitly including games, to disclose that the buyer is getting a license rather than unrestricted ownership, or else avoid words like \"buy\" and \"purchase\". By January 2026, class actions under the law had reached video games; GameStop was sued in federal court over titles sold on its digital storefront.\n\nThat license is enforced technically. Owning an item usually means the publisher's inventory service has a record saying so, and cryptography makes that record trustworthy. The code card is an entitlement grant: player, item, a unique serial and a timestamp, signed with the inventory service's private Ed25519 key. Any game server, store or client can verify it with the public key, but only the inventory service can create one.\n\nOn the right, trades are appended to a hash-chained log: each entry includes the hash of the previous one. An attacker or rogue insider rewrites block 2 so the sword goes to p99. Block 2's hash changes, block 3 now points at a hash that no longer exists, and the edit is detected. It's the tamper-evidence idea behind blockchains, run by one operator, which is often all a game needs. The catch, in amber: these rules, keys, signed tickets and server checks last only as long as the servers and keys behind them.","Who rolls the dice? In an online game the server decides loot drops, crits and card shuffles, and players have to trust it isn't rigging them. In peer-to-peer games it's worse: a peer could wait to see everyone else's roll before choosing its own. Commit–reveal fixes both with nothing more than a hash function.\n\nStep one, commit: before the match, the server picks a random secret seed and publishes only its SHA-256 hash. Because the hash is binding, it can't later swap in a different seed without everyone noticing. Step two, roll: each drop is computed as an HMAC of the seed with the player's own client seed and a round counter. Mixing in the player's seed means the server couldn't have pre-computed a seed that produces bad drops for that player. Step three, reveal: after the match the server publishes the seed. Anyone can hash it, check it matches the commitment, and recompute every roll.\n\nThe animation shows a fair run and then a cheating server that reveals a different seed: the hash no longer matches the commitment, so the cheat is caught.\n\nThe peer-to-peer version: every player commits to a random value, then everyone reveals, and the combined value, for example the XOR of all of them, is the roll. No single player can bias it. The one remaining attack is refusing to reveal when you'd lose, so the rules must treat a missing reveal as a forfeit. The same idea underlies \"mental poker\", fair card shuffling without a trusted dealer.","Encryption hides what you say, not where you are. In a direct connection, peer-to-peer especially, every player learns the other side's IP address, and an angry opponent can flood that address and knock a host or a whole match offline. The animation first shows that: the attacker knows the server's public IP, floods it, and the player's packets start dropping.\n\nThe fix is to put a relay network in the middle, as in the second half of the animation. Valve's documentation for Steam Datagram Relay describes it as a virtual private gaming network: relaying protects servers and players from denial-of-service attacks because IP addresses are never revealed, and all traffic the server receives is authenticated, encrypted and rate-limited. Valve also notes that, for many players, the relayed route is actually faster.\n\nCryptography is what makes the relays safe to expose. For dedicated servers, the game coordinator issues relay tickets that authorize a specific client to talk to a specific server for a period of time, and players are issued individual, short-term certificates tied to their identity. A relay can drop anything without a valid ticket or certificate before it ever reaches the server. Note the IP 203.0.113.7 in the animation is from a range reserved for documentation.","The last slide looks ahead. Everything in this talk that uses public-key cryptography, X25519 key exchange and ECDSA, Ed25519 or RSA signatures, would be broken by a large enough quantum computer. The worry today is \"harvest now, decrypt later\": an attacker records encrypted traffic now and decrypts it years later. Symmetric crypto is fine: AES-256 and SHA-256 keep a comfortable margin, so per-packet gameplay encryption doesn't change. For games, the data worth protecting long-term is logins, payment flows and private chat; a position update from a 2026 match is worthless in 2035.\n\nThe fix is already rolling out. NIST published ML-KEM, a lattice-based key-encapsulation mechanism, as FIPS 203 in August 2024. Browsers and CDNs use it in a hybrid with X25519, called X25519MLKEM768, so the connection stays secure as long as either half holds. Chrome 131 made it the default in November 2024, Firefox 132 shortly before, and Cloudflare reports that by April 2026 more than two-thirds of human-generated TLS traffic to its network used it. Post-quantum signatures for certificates are not yet a TLS default.\n\nThe bars show the catch for game developers. An X25519 key share is 32 bytes; the hybrid ML-KEM key share is 1,216 bytes, which is bigger than the 1,200-byte datagram that's safe to send across the internet. Game handshakes over UDP will need to split it across packets, handle loss and resist amplification. Use a transport that already supports it, such as QUIC with TLS 1.3, rather than adding it by hand.\n\nSources for the deck: Valve, GameNetworkingSockets README (github.com/ValveSoftware/GameNetworkingSockets). Steamworks documentation, Steam Datagram Relay. IETF RFC 9000, QUIC (2021). NIST FIPS 203, ML-KEM (Aug 2024). Encryption Consulting, PQC support in web browsers (citing the Cloudflare blog, 2026). SDxCentral, Cloudflare automatic post-quantum key exchange (2026). Activision Support, TPM 2.0 and Secure Boot for Call of Duty (support.activision.com/tpm). heise online, \"Battlefield 6\" and \"Call of Duty Black Ops 7\" need Secure Boot (Aug 2025). Greenberg Traurig, AB 2426 licensing disclosures for digital goods (Dec 2024). Frankfurt Kurnit, class actions under California's digital goods disclosure law reach video games (Jan 2026)."];
+const S=[...document.querySelectorAll('.slide')],N=S.length,canvas=document.getElementById('canvas');
+let cur=-1;
+function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);canvas.style.transform='scale('+k+')'}
+addEventListener('resize',fit);fit();
+function load(el,on){el.querySelectorAll('iframe.emb').forEach(f=>{if(on){f.srcdoc=f.dataset.src}else{f.removeAttribute('srcdoc');f.src='about:blank'}})}
+function go(n,instant){n=Math.max(0,Math.min(N-1,n));if(n===cur)return;
+ const prev=S[cur];
+ if(prev){prev.classList.remove('on','built');prev.setAttribute('aria-hidden','true');if(n>cur&&prev.classList.contains('push'))prev.classList.add('out');setTimeout(()=>{prev.classList.remove('out');if(!prev.classList.contains('on'))load(prev,false)},650)}
+ const s=S[n];s.classList.remove('out');s.classList.add('on');s.setAttribute('aria-hidden','false');load(s,true);
+ requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('built')));
+ cur=n;document.getElementById('count').textContent=(n+1)+' / '+N;document.getElementById('prog').style.width=((n+1)/N*100)+'%';
+ const nt=NOTES[n]||'';document.getElementById('notes').innerHTML='<b>SPEAKER NOTES · SLIDE '+(n+1)+'</b>'+nt.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+ if(location.hash!=='#'+(n+1))history.replaceState(null,'','#'+(n+1));}
+const next=()=>go(cur+1),prev=()=>go(cur-1);
+document.getElementById('next').onclick=next;document.getElementById('prev').onclick=prev;
+document.getElementById('hr').onclick=next;document.getElementById('hl').onclick=prev;
+document.getElementById('nb').onclick=()=>document.getElementById('notes').classList.toggle('show');
+const fsT=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
+document.getElementById('fs').onclick=fsT;
+addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key;
+ if(['ArrowRight','PageDown',' ','Enter'].includes(k)){e.preventDefault();next()}
+ else if(['ArrowLeft','PageUp','Backspace'].includes(k)){e.preventDefault();prev()}
+ else if(k==='Home')go(0);else if(k==='End')go(N-1);
+ else if(k==='f'||k==='F')fsT();else if(k==='n'||k==='N')document.getElementById('notes').classList.toggle('show');});
+let tx=null;addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)(dx<0?next:prev)();tx=null});
+addEventListener('hashchange',()=>{const n=parseInt(location.hash.slice(1));if(n)go(n-1)});
+go((parseInt(location.hash.slice(1))||1)-1,true);
+setTimeout(()=>{const h=document.getElementById('help');h.style.opacity=0;setTimeout(()=>h.remove(),700)},4000);
+</script>
+</body>
+</html>

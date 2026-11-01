@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Game Crypto Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0D1120;--panel:#161D33;--panel2:#121829;--line:#2A3352;--text:#EEF1F6;--soft:#A9B4C8;--mute:#7C87A0;--cyan:#3FD4E6;--amber:#F5A524;--deep:#10263A;--warm:#2A200C;
+--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--disp:'Space Grotesk',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.55}
+a{color:var(--cyan)}
+header{padding:40px 24px 8px;max-width:1200px;margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.15em;text-transform:uppercase;color:var(--cyan)}
+h1{font-family:var(--disp);font-size:clamp(32px,5vw,52px);line-height:1.05;margin:10px 0 12px;letter-spacing:-.02em}
+.lede{color:var(--soft);max-width:760px;font-size:18px;margin:0}
+nav{position:sticky;top:0;z-index:5;background:rgba(13,17,32,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.tabs{max-width:1200px;margin:0 auto;display:flex;gap:6px;padding:12px 24px;overflow-x:auto}
+.tab{flex:none;background:transparent;color:var(--soft);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font:600 14px var(--sans);cursor:pointer;transition:all .2s}
+.tab:hover{color:var(--text);border-color:var(--soft)}
+.tab[aria-selected=true]{background:var(--cyan);border-color:var(--cyan);color:var(--ink)}
+.tab .n{font-family:var(--mono);opacity:.7;margin-right:6px}
+main{max-width:1200px;margin:0 auto;padding:24px 24px 80px}
+section.panel{display:none;animation:in .35s ease}
+section.panel.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}
+.card h2{font-family:var(--disp);font-size:26px;margin:4px 0 10px;line-height:1.15}
+.card h3{font-family:var(--disp);font-size:18px;margin:16px 0 6px}
+.card p{color:var(--soft);margin:0 0 10px}
+.try{border-left:3px solid var(--amber);padding:8px 0 8px 14px;margin-top:14px;color:var(--soft)}
+.try b{color:var(--amber);font-family:var(--mono);font-size:12px;letter-spacing:.12em;display:block;margin-bottom:4px}
+.try ol{margin:0;padding-left:18px}
+label{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase;margin:12px 0 6px}
+input,textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);font:14px var(--mono);padding:10px 12px}
+textarea{resize:vertical;min-height:70px}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--cyan);outline-offset:1px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1 1 auto}
+button.b{flex:none;background:var(--deep);color:var(--text);border:1px solid var(--cyan);border-radius:10px;padding:10px 14px;font:600 14px var(--sans);cursor:pointer;transition:transform .1s,background .2s}
+button.b:hover{background:#163650}
+button.b:active{transform:scale(.97)}
+button.b.warn{background:var(--warm);border-color:var(--amber)}
+button.b.warn:hover{background:#3a2c10}
+button.b.ghost{background:transparent;border-color:var(--line);color:var(--soft)}
+button.b:disabled{opacity:.4;cursor:not-allowed}
+.mono{font-family:var(--mono)}
+.small{font-size:13px;color:var(--mute)}
+.out{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;font:13px/1.6 var(--mono);word-break:break-all;min-height:44px}
+.status{margin-top:12px;padding:12px 14px;border-radius:12px;font-weight:600;border:1px solid var(--line);background:var(--panel2);min-height:46px;transition:all .3s}
+.status.ok{border-color:var(--cyan);color:var(--cyan);background:var(--deep)}
+.status.bad{border-color:var(--amber);color:var(--amber);background:var(--warm)}
+.status.flash{animation:fl .5s}
+@keyframes fl{0%{transform:scale(1)}40%{transform:scale(1.015)}100%{transform:scale(1)}}
+/* lane animation */
+.lane{position:relative;height:74px;margin:6px 0 4px;border-radius:12px;background:linear-gradient(90deg,var(--panel2),#0f1526,var(--panel2));border:1px solid var(--line);overflow:hidden}
+.lane .end{position:absolute;top:50%;transform:translateY(-50%);font:600 13px var(--mono);color:var(--soft);padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.lane .l{left:10px}.lane .r{right:10px}
+.lane .wire{position:absolute;left:110px;right:110px;top:50%;border-top:2px dashed var(--line)}
+.pkt{position:absolute;top:50%;left:110px;transform:translate(0,-50%);font:600 12px var(--mono);padding:6px 10px;border-radius:8px;background:var(--cyan);color:var(--ink);white-space:nowrap;opacity:0}
+.pkt.go{animation:fly 1.1s ease-in-out forwards}
+.pkt.back{animation:flyb 1.1s ease-in-out forwards}
+.pkt.bad{background:var(--amber)}
+@keyframes fly{0%{left:110px;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:calc(100% - 210px);opacity:0}}
+@keyframes flyb{0%{left:calc(100% - 210px);opacity:0}10%{opacity:1}90%{opacity:1}100%{left:110px;opacity:0}}
+/* packet bytes */
+.pk{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.seg{border-radius:10px;padding:8px 10px;border:1px solid var(--line);background:var(--panel2)}
+.seg .t{font:11px var(--mono);letter-spacing:.12em;color:var(--mute);text-transform:uppercase;display:block;margin-bottom:4px}
+.seg.h{border-color:#3B4770}.seg.c{border-color:var(--cyan)}.seg.g{border-color:var(--amber)}
+.bytes{display:flex;flex-wrap:wrap;gap:3px;font:13px var(--mono)}
+.by{padding:1px 3px;border-radius:4px;cursor:pointer;transition:background .2s}
+.by:hover{background:#26304d}
+.by.f{background:var(--amber);color:var(--ink)}
+.seg.g .by{color:var(--amber)}
+.seg.g .by.f{color:var(--ink)}
+/* DH */
+.dh{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.party{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.party h4{margin:0 0 6px;font-family:var(--disp);font-size:16px}
+.party .k{font:12px/1.5 var(--mono);color:var(--soft);word-break:break-all}
+.party.al h4{color:var(--amber)}.party.bo h4{color:var(--cyan)}.party.ev h4{color:#C9A0FF}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:6px}
+.match{font-weight:700}
+.toggle{display:flex;align-items:center;gap:10px;margin:8px 0;color:var(--soft);cursor:pointer;font:14px var(--sans);letter-spacing:0;text-transform:none}
+.toggle input{width:auto;accent-color:var(--cyan)}
+/* token */
+.tok{font:14px/1.6 var(--mono);word-break:break-all}
+.tok .h{color:var(--cyan)}.tok .p{color:var(--text)}.tok .s{color:#9DB2FF}.tok .d{color:var(--mute)}
+/* replay */
+.win{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;margin:10px 0}
+.cell{aspect-ratio:1;border-radius:5px;background:var(--panel2);border:1px solid var(--line);font:9px var(--mono);color:var(--mute);display:flex;align-items:center;justify-content:center;transition:all .25s}
+.cell.on{background:#123B47;border-color:var(--cyan);color:var(--text)}
+.cell.hit{background:var(--amber);border-color:var(--amber);color:var(--ink);transform:scale(1.12)}
+.log{max-height:260px;overflow:auto;font:13px/1.7 var(--mono);background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.log div{animation:in .3s}
+.log .ok{color:var(--cyan)}.log .bad{color:var(--amber)}
+/* ledger */
+.chain{display:flex;flex-direction:column;gap:0}
+.blk{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font:13px/1.55 var(--mono);animation:drop .4s ease;position:relative}
+.blk.broken{border-color:var(--amber);background:var(--warm)}
+.blk.good{border-color:var(--cyan)}
+.blk .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.blk .act{color:var(--text);font-weight:600}
+.blk .meta{color:var(--mute);font-size:12px}
+.blk .why{color:var(--amber);font-size:12px;margin-top:4px}
+.link{height:18px;margin-left:24px;border-left:2px solid var(--line)}
+@keyframes drop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.inv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.inv div{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;font:13px var(--mono);min-height:70px}
+.inv b{display:block;font-family:var(--disp);font-size:15px;margin-bottom:4px}
+.chip{display:inline-block;background:#1E2742;border:1px solid #3B4770;border-radius:6px;padding:1px 6px;margin:2px 2px 0 0;font-size:12px}
+footer{max-width:1200px;margin:0 auto;padding:0 24px 40px;color:var(--mute);font-size:13px}
+.pill{display:inline-block;font:12px var(--mono);padding:3px 8px;border:1px solid var(--line);border-radius:999px;color:var(--soft)}
+</style>
+</head>
+<body>
+<header>
+<div class="eyebrow">Companion to “Cryptography in Online Multiplayer Games”</div>
+<h1>Game Crypto Lab</h1>
+<p class="lede">Five hands-on demos that run real cryptography in your browser (Web Crypto API). Encrypt a game packet and tamper with it, run a key exchange with and without a man in the middle, forge a session token, replay packets, and try to duplicate an item on a signed ledger.</p>
+<p class="small" id="support" style="margin-top:10px"></p>
+</header>
+<nav><div class="tabs" role="tablist">
+<button class="tab" role="tab" aria-selected="true" data-t="p1"><span class="n">01</span>Packet encryption</button>
+<button class="tab" role="tab" aria-selected="false" data-t="p2"><span class="n">02</span>Key exchange</button>
+<button class="tab" role="tab" aria-selected="false" data-t="p3"><span class="n">03</span>Token forgery</button>
+<button class="tab" role="tab" aria-selected="false" data-t="p4"><span class="n">04</span>Replay window</button>
+<button class="tab" role="tab" aria-selected="false" data-t="p5"><span class="n">05</span>Item ledger</button>
+</div></nav>
+<main>
+
+<!-- 1 PACKETS -->
+<section class="panel on" id="p1">
+<div class="grid">
+<div class="card">
+<div class="eyebrow">AES-256-GCM · AEAD</div>
+<h2>Encrypt a game packet, then attack it</h2>
+<p>The header (sequence number and player) travels in the clear but is <b>authenticated</b> as associated data. The payload is encrypted. GCM appends a 16-byte tag that covers both.</p>
+<p>The 12-byte nonce is built from the sequence number, so every packet gets a unique one, as long as the sequence never repeats under the same key.</p>
+<div class="try"><b>TRY THIS</b><ol>
+<li>Encrypt and deliver: the server decrypts it.</li>
+<li>Click any byte of the ciphertext or tag to flip one bit, then deliver again.</li>
+<li>Change the player in the header after encrypting.</li>
+<li>Set the sequence back to a number you already used and encrypt: nonce reuse.</li></ol></div>
+</div>
+<div class="card">
+<div class="row"><button class="b" id="k1">New session key</button><span class="small mono" id="kfp">no key yet</span></div>
+<div class="row" style="margin-top:4px">
+<div><label for="seq">Sequence #</label><input id="seq" type="number" value="4182" min="0"></div>
+<div><label for="pid">Player</label><input id="pid" value="p17"></div>
+</div>
+<label for="msg">Payload (plaintext)</label>
+<textarea id="msg">pos=(12.4, 3.1) fire=1 weapon=rifle</textarea>
+<div class="row" style="margin-top:10px">
+<button class="b" id="encB">Encrypt</button>
+<button class="b" id="sendB" disabled>Deliver to server</button>
+<button class="b warn" id="hdrB" disabled>Tamper: header p17 → p18</button>
+</div>
+<div class="lane"><span class="end l">CLIENT</span><span class="wire"></span><span class="end r">SERVER</span><span class="pkt" id="pk1">packet</span></div>
+<div id="pkt" class="pk"><span class="small">Encrypt a packet to see it here.</span></div>
+<div class="status" id="st1">Waiting for a packet…</div>
+</div>
+</div>
+</section>
+
+<!-- 2 KEY EXCHANGE -->
+<section class="panel" id="p2">
+<div class="grid">
+<div class="card">
+<div class="eyebrow">Elliptic-curve Diffie–Hellman</div>
+<h2>Agree on a key over an open network</h2>
+<p>Alice (the player) and Bob (the server) each make a key pair and swap <b>public</b> keys. Each combines its own private key with the other’s public key and gets the same shared secret. HKDF then turns that secret into one key per direction.</p>
+<p>Plain Diffie–Hellman doesn’t say <i>who</i> you’re talking to. Switch on Mallory to see why game servers also <b>sign</b> their half of the handshake.</p>
+<div class="try"><b>TRY THIS</b><ol>
+<li>Run the handshake: both secrets match.</li>
+<li>Turn on Mallory: Alice and Bob now hold different secrets, both known to Mallory.</li>
+<li>Also turn on server signatures: Alice spots the swap and aborts.</li></ol></div>
+</div>
+<div class="card">
+<label class="toggle"><input type="checkbox" id="mitm"> Mallory sits in the middle and swaps keys</label>
+<label class="toggle"><input type="checkbox" id="sig"> Bob signs his public key with the server’s long-term key</label>
+<div class="row"><button class="b" id="hs">Run handshake</button><span class="small mono" id="curve"></span></div>
+<div class="lane"><span class="end l">ALICE</span><span class="wire"></span><span class="end r">BOB</span><span class="pkt" id="pk2a">A_pub</span><span class="pkt" id="pk2b">B_pub</span></div>
+<div class="dh">
+<div class="party al"><h4>Alice · player</h4><div class="k" id="aK">—</div></div>
+<div class="party ev"><h4 id="evT">Eve · listening</h4><div class="k" id="eK">—</div></div>
+<div class="party bo"><h4>Bob · server</h4><div class="k" id="bK">—</div></div>
+</div>
+<div class="status" id="st2">Press “Run handshake”.</div>
+<div class="out" id="hk" style="margin-top:10px">Derived keys appear here.</div>
+</div>
+</div>
+</section>
+
+<!-- 3 TOKENS -->
+<section class="panel" id="p3">
+<div class="grid">
+<div class="card">
+<div class="eyebrow">HMAC-SHA256 · JWT-style</div>
+<h2>Try to forge a session token</h2>
+<p>The auth server issues <span class="mono">header.payload.signature</span>. The payload is only base64url-encoded, so anyone can read and edit it. The signature is an HMAC keyed with a secret only servers hold.</p>
+<p>This game server also pins the algorithm to HS256 and checks the expiry.</p>
+<div class="try"><b>TRY THIS</b><ol>
+<li>Log in and send the token: accepted.</li>
+<li>Click “Make me admin” and send it.</li>
+<li>Try the <span class="mono">alg: none</span> trick.</li>
+<li>Guess the secret and sign it yourself.</li></ol></div>
+</div>
+<div class="card">
+<div class="row"><button class="b" id="login">Log in as p17</button><span class="small mono">server secret: <span id="sec">hidden, 32 random bytes</span></span></div>
+<label>Token on the wire</label>
+<div class="out tok" id="tok">Log in first.</div>
+<div class="row">
+<div><label for="th">Header (JSON)</label><textarea id="th" rows="2"></textarea></div>
+<div><label for="tp">Payload (JSON)</label><textarea id="tp" rows="2"></textarea></div>
+</div>
+<label for="guess">Optional: re-sign with your guess of the secret</label>
+<input id="guess" placeholder="leave empty to keep the original signature">
+<div class="row" style="margin-top:10px">
+<button class="b warn" id="adm" disabled>Make me admin</button>
+<button class="b warn" id="ext" disabled>Extend expiry by a year</button>
+<button class="b warn" id="none" disabled>alg: none trick</button>
+<button class="b" id="snd" disabled>Send to game server</button>
+</div>
+<div class="lane"><span class="end l">CLIENT</span><span class="wire"></span><span class="end r">SERVER</span><span class="pkt" id="pk3">token</span></div>
+<div class="status" id="st3">No token yet.</div>
+<div class="out" id="chk" style="margin-top:10px">Server check details appear here.</div>
+</div>
+</div>
+</section>
+
+<!-- 4 REPLAY -->
+<section class="panel" id="p4">
+<div class="grid">
+<div class="card">
+<div class="eyebrow">Anti-replay sliding window</div>
+<h2>Replay a packet and get caught</h2>
+<p>Each packet carries a sequence number that is authenticated with the packet. The receiver remembers which of the last <b>32</b> numbers it has seen.</p>
+<p>New numbers slide the window forward. Late but unseen packets are accepted, because the internet reorders traffic. Duplicates and packets older than the window are dropped.</p>
+<div class="try"><b>TRY THIS</b><ol>
+<li>Send a few packets, then send a late one.</li>
+<li>Replay a packet you already sent.</li>
+<li>Jump far ahead, then send an ancient one.</li></ol></div>
+</div>
+<div class="card">
+<div class="row">
+<button class="b" id="r1">Send next</button>
+<button class="b" id="r2">Send late (unseen)</button>
+<button class="b warn" id="r3">Replay a seen packet</button>
+<button class="b warn" id="r4">Send ancient (−50)</button>
+<button class="b ghost" id="r5">Jump ahead +10</button>
+<button class="b ghost" id="r6">Reset</button>
+</div>
+<div class="lane"><span class="end l">ATTACKER / NET</span><span class="wire"></span><span class="end r">SERVER</span><span class="pkt" id="pk4">#</span></div>
+<div class="small mono" id="wlab">window: —</div>
+<div class="win" id="win"></div>
+<div class="status" id="st4">Send a packet.</div>
+<label>Server log</label>
+<div class="log" id="log4"></div>
+</div>
+</div>
+</section>
+
+<!-- 5 LEDGER -->
+<section class="panel" id="p5">
+<div class="grid">
+<div class="card">
+<div class="eyebrow">Signed, hash-chained inventory log</div>
+<h2>Try to duplicate or steal an item</h2>
+<p>Every grant and trade becomes an entry. The inventory server hashes it with SHA-256, includes the previous entry’s hash, and signs it with its private key. Anyone holding the public key can audit the whole history.</p>
+<p>Trades carry an <b>idempotency key</b>, so a retried or replayed request runs only once. The server also checks the seller actually owns the item.</p>
+<div class="try"><b>TRY THIS</b><ol>
+<li>Mint a few items and trade them.</li>
+<li>Replay the last trade request (a dupe attempt).</li>
+<li>Sell an item you don’t own.</li>
+<li>Tamper with an old entry, then verify the chain, with and without recomputing its hash.</li></ol></div>
+</div>
+<div class="card">
+<div class="row">
+<div><label for="mi">Item</label><input id="mi" value="Sword of Dawn"></div>
+<div><label for="mto">Mint to</label><select id="mto"><option>p17</option><option>p42</option><option>p08</option></select></div>
+<button class="b" id="mint" style="align-self:flex-end">Mint</button>
+</div>
+<div class="row">
+<div><label for="ti">Trade item</label><select id="ti"></select></div>
+<div><label for="tf">From</label><select id="tf"><option>p17</option><option>p42</option><option>p08</option></select></div>
+<div><label for="tt">To</label><select id="tt"><option>p42</option><option>p17</option><option>p08</option></select></div>
+<button class="b" id="trade" style="align-self:flex-end">Trade</button>
+</div>
+<div class="row" style="margin-top:10px">
+<button class="b warn" id="dupe">Replay last trade (dupe)</button>
+<button class="b warn" id="tamp">Tamper with entry #2</button>
+<label class="toggle" style="flex:none;margin:0"><input type="checkbox" id="rehash"> …and recompute its hash</label>
+<button class="b" id="ver">Verify chain</button>
+</div>
+<div class="status" id="st5">Mint an item to start the log.</div>
+<label>Current owners (rebuilt from the log)</label>
+<div class="inv" id="inv"></div>
+<label>Log</label>
+<div class="chain" id="chain"></div>
+</div>
+</div>
+</section>
+</main>
+<footer>Everything runs locally in your browser; nothing is sent anywhere. Keys are generated fresh on each page load. These are teaching demos: production games should use vetted libraries and transports (for example Valve’s GameNetworkingSockets, QUIC or DTLS) rather than hand-rolled protocols.</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const enc=new TextEncoder(),dec=new TextDecoder();
+const S=crypto.subtle;
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const b64u=b=>{let s='';new Uint8Array(b).forEach(x=>s+=String.fromCharCode(x));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+const b64uS=s=>b64u(enc.encode(s));
+const unb64u=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+const short=h=>h.slice(0,10)+'…'+h.slice(-6);
+function status(el,msg,kind){const e=$(el);e.innerHTML=msg;e.className='status'+(kind?' '+kind:'');void e.offsetWidth;e.classList.add('flash')}
+function fly(id,label,bad,back){const p=$(id);p.textContent=label;p.className='pkt';void p.offsetWidth;p.className='pkt '+(back?'back':'go')+(bad?' bad':'');return new Promise(r=>setTimeout(r,1000))}
+
+// tabs
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+ document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===t.dataset.t));});
+
+// feature detection
+let DH='ECDH P-256',SIG='ECDSA P-256';
+async function detect(){
+ try{await S.generateKey({name:'X25519'},true,['deriveBits']);DH='X25519'}catch(e){}
+ try{await S.generateKey({name:'Ed25519'},true,['sign','verify']);SIG='Ed25519'}catch(e){}
+ $('support').innerHTML='Running on this browser: <span class="pill">AES-256-GCM</span> <span class="pill">'+DH+'</span> <span class="pill">'+SIG+'</span> <span class="pill">HMAC-SHA256</span> <span class="pill">HKDF</span>';
+ $('curve').textContent='curve: '+DH;}
+const genDH=()=>DH==='X25519'?S.generateKey({name:'X25519'},true,['deriveBits']):S.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
+const dhBits=(priv,pub)=>S.deriveBits({name:DH==='X25519'?'X25519':'ECDH',public:pub},priv,256);
+const genSig=()=>SIG==='Ed25519'?S.generateKey({name:'Ed25519'},true,['sign','verify']):S.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+const sigAlg=()=>SIG==='Ed25519'?{name:'Ed25519'}:{name:'ECDSA',hash:'SHA-256'};
+const sign=(k,d)=>S.sign(sigAlg(),k,d);
+const verify=(k,s,d)=>S.verify(sigAlg(),k,s,d);
+const sha=async d=>hex(await S.digest('SHA-256',typeof d==='string'?enc.encode(d):d));
+
+/* ---------- 1 PACKETS ---------- */
+let K1=null,used=new Set(),P1=null;
+async function newKey(){K1=await S.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);used=new Set();
+ const raw=await S.exportKey('raw',K1);$('kfp').textContent='key fingerprint '+hex(raw).slice(0,16)+'…';P1=null;$('sendB').disabled=true;$('hdrB').disabled=true;
+ $('pkt').innerHTML='<span class="small">Encrypt a packet to see it here.</span>';status('st1','New 256-bit session key. Normally this comes out of the key exchange (tab 02).');}
+function nonceFor(seq){const n=new Uint8Array(12);const v=new DataView(n.buffer);v.setUint32(4,Math.floor(seq/2**32));v.setUint32(8,seq>>>0);return n}
+function header(seq,pid){return 'seq='+seq+';player='+pid}
+function renderPkt(){const ct=P1.ct,n=ct.length-16;
+ const bytes=(from,to)=>{let h='';for(let i=from;i<to;i++)h+='<span class="by'+(P1.flipped.has(i)?' f':'')+'" data-i="'+i+'">'+ct[i].toString(16).padStart(2,'0')+'</span>';return h};
+ $('pkt').innerHTML='<div class="seg h"><span class="t">header · clear, authenticated</span><span class="mono">'+P1.hdr+'</span></div>'+
+ '<div class="seg"><span class="t">nonce · from seq</span><span class="mono">'+hex(P1.nonce)+'</span></div>'+
+ '<div class="seg c" style="flex:1 1 300px"><span class="t">ciphertext · '+n+' bytes · click to flip a bit</span><div class="bytes">'+bytes(0,n)+'</div></div>'+
+ '<div class="seg g"><span class="t">auth tag · 16 bytes</span><div class="bytes">'+bytes(n,ct.length)+'</div></div>';
+ $('pkt').querySelectorAll('.by').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;P1.ct[i]^=1;P1.flipped.has(i)?P1.flipped.delete(i):P1.flipped.add(i);renderPkt();
+  status('st1','Flipped the lowest bit of byte '+i+'. Deliver it and see what the server says.','bad')});}
+$('k1').onclick=newKey;
+$('encB').onclick=async()=>{if(!K1)await newKey();
+ const seq=+$('seq').value||0,pid=$('pid').value.trim()||'p17',hdr=header(seq,pid),nonce=nonceFor(seq);
+ const reuse=used.has(seq);used.add(seq);
+ const ct=new Uint8Array(await S.encrypt({name:'AES-GCM',iv:nonce,additionalData:enc.encode(hdr),tagLength:128},K1,enc.encode($('msg').value)));
+ P1={seq,hdr,nonce,ct,flipped:new Set()};renderPkt();$('sendB').disabled=false;$('hdrB').disabled=false;
+ if(reuse)status('st1','⚠ Nonce reuse! Sequence '+seq+' was already used with this key. With GCM, two packets under one nonce leak the XOR of their plaintexts and let an attacker forge tags. Real stacks never let the counter repeat; they rekey first.','bad');
+ else status('st1','Encrypted. The payload is now '+(ct.length-16)+' random-looking bytes plus a 16-byte tag. Sequence auto-advances to keep nonces unique.','ok');
+ if(!reuse)$('seq').value=seq+1;};
+$('hdrB').onclick=()=>{if(!P1)return;P1.hdr=P1.hdr.includes('p17')?P1.hdr.replace('p17','p18'):P1.hdr.replace(/player=[^;]*/,'player=p18');renderPkt();
+ status('st1','Header changed in transit to “'+P1.hdr+'”. It was never encrypted, but it is authenticated…','bad')};
+$('sendB').onclick=async()=>{if(!P1)return;const tam=P1.flipped.size>0||P1.hdr!==header(P1.seq,$('pid').value.trim()||'p17');
+ await fly('pk1','seq '+P1.seq,tam);
+ try{const pt=await S.decrypt({name:'AES-GCM',iv:P1.nonce,additionalData:enc.encode(P1.hdr),tagLength:128},K1,P1.ct);
+  status('st1','✓ Tag valid. Server decrypted: <span class="mono">'+dec.decode(pt).replace(/</g,'&lt;')+'</span>','ok')}
+ catch(e){status('st1','✗ Tag check failed ('+e.name+'). Packet dropped before the game logic saw it. One flipped bit anywhere in the header, ciphertext or tag is enough.','bad')}};
+
+/* ---------- 2 KEY EXCHANGE ---------- */
+$('hs').onclick=async()=>{
+ const mitm=$('mitm').checked,signed=$('sig').checked;$('hs').disabled=true;
+ try{
+ const A=await genDH(),B=await genDH(),srv=await genSig();
+ const Apub=hex(await S.exportKey('raw',A.publicKey)),Bpub=hex(await S.exportKey('raw',B.publicKey));
+ let toBob=A.publicKey,toAlice=B.publicKey,toAliceHex=Bpub,M1,M2,mal=null;
+ let sigOnB=signed?await sign(srv.privateKey,enc.encode(Bpub)):null,sigShown=sigOnB;
+ if(mitm){M1=await genDH();M2=await genDH();toBob=M1.publicKey;toAlice=M2.publicKey;toAliceHex=hex(await S.exportKey('raw',M2.publicKey));
+  if(signed){const fake=await genSig();sigShown=await sign(fake.privateKey,enc.encode(toAliceHex))}}
+ $('evT').textContent=mitm?'Mallory · in the middle':'Eve · listening';
+ $('aK').innerHTML='private: <i>never sent</i><br>public: '+short(Apub);$('bK').innerHTML='private: <i>never sent</i><br>public: '+short(Bpub);
+ $('eK').innerHTML='sees A_pub '+short(Apub)+'<br>sees B_pub '+short(Bpub)+(mitm?'<br><span style="color:#C9A0FF">swaps in her own keys</span>':'');
+ status('st2','Swapping public keys…');
+ await Promise.all([fly('pk2a',mitm?'A_pub → M':'A_pub'),new Promise(r=>setTimeout(r,250)).then(()=>fly('pk2b',mitm?'M_pub':'B_pub',mitm,true))]);
+ if(signed){const ok=await verify(srv.publicKey,sigShown,enc.encode(toAliceHex));
+  if(!ok){status('st2','✗ Alice checks the signature on the key she received against the server’s known public key ('+SIG+'). It doesn’t verify, so she aborts. Mallory can swap keys but can’t forge the server’s signature.','bad');$('hk').textContent='No keys derived: handshake aborted.';return}}
+ const sA=hex(await dhBits(A.privateKey,toAlice)),sB=hex(await dhBits(B.privateKey,toBob));
+ $('aK').innerHTML+='<br><span class="match">secret: '+short(sA)+'</span>';$('bK').innerHTML+='<br><span class="match">secret: '+short(sB)+'</span>';
+ if(sA===sB){
+  const base=await S.importKey('raw',unb64u(b64u(Uint8Array.from(sA.match(/../g).map(h=>parseInt(h,16))))),'HKDF',false,['deriveBits']);
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const k1=hex(await S.deriveBits({name:'HKDF',hash:'SHA-256',salt,info:enc.encode('client->server')},base,256));
+  const k2=hex(await S.deriveBits({name:'HKDF',hash:'SHA-256',salt,info:enc.encode('server->client')},base,256));
+  status('st2','✓ Both sides computed the same '+DH+' shared secret'+(signed?', and the server’s signature checked out':'')+'. The eavesdropper saw only the public keys.','ok');
+  $('hk').innerHTML='HKDF-SHA256(secret, info=“client-&gt;server”) = '+short(k1)+'<br>HKDF-SHA256(secret, info=“server-&gt;client”) = '+short(k2)+'<br><span style="color:#7C87A0">Two different keys, so a packet can’t be reflected back at its sender.</span>';
+ }else{
+  status('st2','✗ Alice and Bob hold <b>different</b> secrets, and Mallory knows both. She can decrypt, read, edit and re-encrypt everything. Plain Diffie–Hellman can’t detect this; turn on server signatures.','bad');
+  $('eK').innerHTML+='<br>knows Alice’s: '+short(sA)+'<br>knows Bob’s: '+short(sB);$('hk').textContent='Keys derived, but from a compromised exchange.';}
+ }finally{$('hs').disabled=false}};
+
+/* ---------- 3 TOKENS ---------- */
+let SECRET=crypto.getRandomValues(new Uint8Array(32)),HK=null,ORIG=null;
+const hmacKey=async raw=>S.importKey('raw',raw,{name:'HMAC',hash:'SHA-256'},false,['sign']);
+async function hs256(raw,data){return b64u(await S.sign('HMAC',await hmacKey(raw),enc.encode(data)))}
+function showTok(t){const [h,p,s]=t.split('.');$('tok').innerHTML='<span class="h">'+h+'</span><span class="d">.</span><span class="p">'+p+'</span><span class="d">.</span><span class="s">'+(s||'')+'</span>'}
+function currentToken(){return ORIG?(b64uS($('th').value.trim())+'.'+b64uS($('tp').value.trim())+'.'+ORIG.sig):''}
+async function buildFromEditors(){if(!ORIG)return'';const h=b64uS($('th').value.trim()),p=b64uS($('tp').value.trim());const g=$('guess').value;
+ let s=ORIG.sig;try{const hd=JSON.parse($('th').value);if(hd.alg==='none')s=''}catch(e){}
+ if(g)s=await hs256(enc.encode(g),h+'.'+p);return h+'.'+p+'.'+s}
+$('login').onclick=async()=>{const hd={alg:'HS256',typ:'JWT'},pl={sub:'p17',role:'player',exp:Math.floor(Date.now()/1000)+600};
+ const h=b64uS(JSON.stringify(hd)),p=b64uS(JSON.stringify(pl)),sig=await hs256(SECRET,h+'.'+p);
+ ORIG={h,p,sig};$('th').value=JSON.stringify(hd);$('tp').value=JSON.stringify(pl);showTok(h+'.'+p+'.'+sig);
+ ['adm','ext','none','snd'].forEach(i=>$(i).disabled=false);$('guess').value='';
+ status('st3','Logged in. Token issued by the auth server, valid for 10 minutes. Edit the header or payload, or use the attack buttons.','ok');$('chk').textContent='—'};
+['th','tp','guess'].forEach(i=>$(i).oninput=async()=>showTok(await buildFromEditors()));
+const editJSON=(id,f)=>{try{const o=JSON.parse($(id).value);f(o);$(id).value=JSON.stringify(o)}catch(e){status('st3','That field isn’t valid JSON.','bad')}};
+$('adm').onclick=async()=>{editJSON('tp',o=>o.role='admin');showTok(await buildFromEditors());status('st3','Payload now says role “admin”. The signature is still the original one…','bad')};
+$('ext').onclick=async()=>{editJSON('tp',o=>o.exp=(o.exp||0)+31536000);showTok(await buildFromEditors());status('st3','Expiry pushed a year into the future…','bad')};
+$('none').onclick=async()=>{editJSON('th',o=>o.alg='none');editJSON('tp',o=>o.role='admin');showTok(await buildFromEditors());status('st3','Header claims alg “none” and the signature is empty: an old attack on servers that trust the token’s own header.','bad')};
+$('snd').onclick=async()=>{const t=await buildFromEditors();const tam=t!==ORIG.h+'.'+ORIG.p+'.'+ORIG.sig;await fly('pk3','token',tam);
+ const [h,p,s]=t.split('.');let hd,pl;
+ try{hd=JSON.parse(dec.decode(unb64u(h)));pl=JSON.parse(dec.decode(unb64u(p)))}catch(e){status('st3','✗ Rejected: malformed token.','bad');return}
+ const lines=['alg in header: '+hd.alg+'  (server only accepts HS256)'];
+ if(hd.alg!=='HS256'){$('chk').innerHTML=lines.join('<br>');status('st3','✗ Rejected: algorithm “'+hd.alg+'” not allowed. The server decides the algorithm, never the token.','bad');return}
+ const expect=await hs256(SECRET,h+'.'+p);lines.push('expected HMAC: '+expect.slice(0,22)+'…','received sig:  '+(s||'(empty)').slice(0,22)+'…');
+ $('chk').innerHTML=lines.join('<br>');
+ if(expect!==s){status('st3','✗ Rejected: signature mismatch. Any change to header or payload changes the HMAC, and without the 32-byte secret nobody can compute the new one.','bad');return}
+ if(pl.exp<Date.now()/1000){status('st3','✗ Rejected: token expired.','bad');return}
+ status('st3','✓ Accepted: '+pl.sub+' with role “'+pl.role+'”.','ok')};
+
+/* ---------- 4 REPLAY ---------- */
+const W=32;let hi=0,seen=new Set(),sent=[];
+function drawWin(hit){const w=$('win');w.innerHTML='';const lo=Math.max(1,hi-W+1);
+ $('wlab').textContent=hi?('window: #'+lo+' … #'+hi+'  (highest seen: #'+hi+')'):'window: empty';
+ for(let n=lo;n<lo+W;n++){const c=document.createElement('div');c.className='cell'+(seen.has(n)?' on':'')+(n===hit?' hit':'');c.textContent=n<=hi?n%100:'';w.appendChild(c)}}
+function log4(msg,ok){const d=document.createElement('div');d.className=ok?'ok':'bad';d.textContent=msg;$('log4').prepend(d)}
+async function recv(n,label){await fly('pk4','#'+n,label!=='normal');
+ if(n>hi){for(const s of [...seen])if(s<=n-W)seen.delete(s);hi=n;seen.add(n);sent.push(n);drawWin();status('st4','✓ #'+n+' is new. Accepted; the window slides forward.','ok');log4('ACCEPT  #'+n+'  new',true);return}
+ if(hi-n>=W){drawWin();status('st4','✗ #'+n+' is older than the window (#'+(hi-W+1)+'+). Dropped: the server can’t tell if it’s a replay, so it assumes it is.','bad');log4('DROP    #'+n+'  too old',false);return}
+ if(seen.has(n)){drawWin(n);status('st4','✗ #'+n+' was already seen. Dropped as a replay. The attacker’s copy is byte-for-byte valid, which is why the tag alone can’t catch it.','bad');log4('DROP    #'+n+'  replay',false);return}
+ seen.add(n);sent.push(n);drawWin();status('st4','✓ #'+n+' arrived late but was never seen. Accepted: reordering is normal on the internet.','ok');log4('ACCEPT  #'+n+'  late',true)}
+$('r1').onclick=()=>recv(hi+1,'normal');
+$('r2').onclick=()=>{let n=null;for(let k=hi-1;k>hi-W&&k>0;k--)if(!seen.has(k)){n=k;break}
+ if(n===null){if(hi<2){recv(hi+1,'normal');return}$('r5').onclick();status('st4','No gaps yet. Jumped ahead to create some; now try “Send late” again.');return}recv(n,'late')};
+$('r3').onclick=()=>{const c=[...seen];if(!c.length){status('st4','Send something first.');return}recv(c[Math.floor(Math.random()*c.length)],'replay')};
+$('r4').onclick=()=>{if(hi<51){status('st4','Send or jump ahead a bit more first, so there is something 50 behind.');return}recv(hi-50,'old')};
+$('r5').onclick=()=>{hi+=10;seen.add(hi);for(const s of [...seen])if(s<=hi-W)seen.delete(s);drawWin();log4('ACCEPT  #'+hi+'  jump',true);status('st4','Jumped to #'+hi+'. The numbers in between are gaps: if they show up later, they’re accepted once.','ok')};
+$('r6').onclick=()=>{hi=0;seen=new Set();sent=[];$('log4').innerHTML='';drawWin();status('st4','Reset.')};
+drawWin();
+
+/* ---------- 5 LEDGER ---------- */
+let SK=null,L=[],serial=88200,lastTrade=null,usedIdem=new Set();
+const players=['p17','p42','p08'];
+const body=e=>JSON.stringify({i:e.i,act:e.act,item:e.item,serial:e.serial,from:e.from,to:e.to,idem:e.idem,prev:e.prev});
+async function append(e){e.i=L.length+1;e.prev=L.length?L[L.length-1].hash:'0'.repeat(64);e.hash=await sha(body(e));e.sig=new Uint8Array(await sign(SK.privateKey,enc.encode(e.hash)));L.push(e)}
+function owners(){const o={};for(const e of L){o[e.serial]={item:e.item,owner:e.to}}return o}
+function render5(marks){const o=owners();
+ $('inv').innerHTML=players.map(p=>'<div><b>'+p+'</b>'+(Object.entries(o).filter(([s,v])=>v.owner===p).map(([s,v])=>'<span class="chip">'+v.item+' #'+s+'</span>').join('')||'<span class="small">nothing</span>')+'</div>').join('');
+ $('ti').innerHTML=Object.entries(o).map(([s,v])=>'<option value="'+s+'">'+v.item+' #'+s+' ('+v.owner+')</option>').join('');
+ $('chain').innerHTML=L.map((e,k)=>{const m=marks&&marks[k];return (k?'<div class="link"></div>':'')+'<div class="blk'+(m?(m.ok?' good':' broken'):'')+'"><div class="top"><span class="act">#'+e.i+' '+e.act+'  '+e.item+' #'+e.serial+'  '+(e.from?e.from+' → ':'→ ')+e.to+'</span><span class="meta">idem '+e.idem+'</span></div><div class="meta">prev '+e.prev.slice(0,12)+'… · hash '+e.hash.slice(0,12)+'… · sig '+hex(e.sig).slice(0,10)+'…</div>'+(m&&!m.ok?'<div class="why">'+m.why+'</div>':'')+'</div>'}).reverse().join('');}
+$('mint').onclick=async()=>{const item=$('mi').value.trim()||'Item';serial++;await append({act:'MINT',item,serial,from:null,to:$('mto').value,idem:'m-'+serial});render5();status('st5','✓ Minted '+item+' #'+serial+' to '+$('mto').value+'. Entry hashed, chained and signed.','ok')};
+async function doTrade(req){const o=owners()[req.serial];
+ if(usedIdem.has(req.idem)){status('st5','✗ Rejected: idempotency key '+req.idem+' was already processed. The replayed request can’t run twice, so no dupe.','bad');return}
+ if(!o){status('st5','Mint something first.','bad');return}
+ if(o.owner!==req.from){status('st5','✗ Rejected: '+req.from+' doesn’t own '+o.item+' #'+req.serial+' (owner: '+o.owner+'). The server checks ownership from the log, not from the client’s word.','bad');return}
+ if(req.from===req.to){status('st5','Pick two different players.','bad');return}
+ usedIdem.add(req.idem);await append({act:'TRADE',item:o.item,serial:req.serial,from:req.from,to:req.to,idem:req.idem});lastTrade=req;render5();
+ status('st5','✓ Trade committed atomically: '+o.item+' #'+req.serial+' '+req.from+' → '+req.to+'.','ok')}
+$('trade').onclick=()=>{const s=+$('ti').value;if(!s){status('st5','Mint something first.','bad');return}doTrade({serial:s,from:$('tf').value,to:$('tt').value,idem:'t-'+crypto.getRandomValues(new Uint32Array(1))[0].toString(16)})};
+$('dupe').onclick=()=>{if(!lastTrade){status('st5','Make a trade first, then replay it.','bad');return}doTrade({...lastTrade})};
+$('tamp').onclick=async()=>{if(L.length<2){status('st5','You need at least two entries.','bad');return}const e=L[1];if(!e.orig)e.orig=e.to;const nw=players.find(p=>p!==e.orig&&p!==e.from)||'p99';
+ e.to=nw;if($('rehash').checked)e.hash=await sha(body(e));render5();
+ status('st5','Entry #2 rewritten so the item goes to '+nw+($('rehash').checked?', and its hash recomputed to hide the edit':'')+'. Now verify the chain.','bad')};
+$('ver').onclick=async()=>{const marks=[];let bad=0;
+ for(let k=0;k<L.length;k++){const e=L[k],why=[];
+  if(await sha(body(e))!==e.hash)why.push('content doesn’t match its hash');
+  if(k&&e.prev!==L[k-1].hash)why.push('prev doesn’t match entry #'+k+'’s hash');
+  if(!await verify(SK.publicKey,e.sig,enc.encode(e.hash)))why.push('server signature invalid for this hash');
+  marks.push({ok:!why.length,why:why.join(' · ')});if(why.length)bad++}
+ render5(marks);
+ if(!L.length)status('st5','Nothing to verify yet.');
+ else if(!bad)status('st5','✓ All '+L.length+' entries verified: hashes, links and '+SIG+' signatures.','ok');
+ else status('st5','✗ '+bad+' entr'+(bad>1?'ies':'y')+' failed. Edit the content and the hash breaks; recompute the hash and the signature and the next link break. Only the server’s private key can make a valid entry.','bad')};
+
+(async()=>{await detect();SK=await genSig();await newKey();render5();})();
+</script>
+</body>
+</html>
